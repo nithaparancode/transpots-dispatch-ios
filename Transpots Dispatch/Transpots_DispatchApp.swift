@@ -36,10 +36,27 @@ class AppState: ObservableObject {
     @Published var isAuthenticated = false
     
     private var cancellables = Set<AnyCancellable>()
+    private let storageManager: StorageManager
+    private let hasLaunchedBeforeKey = "com.transpots.hasLaunchedBefore"
     
-    init() {
+    init(storageManager: StorageManager = .shared) {
+        self.storageManager = storageManager
+        handleFirstInstall()
         checkAuthentication()
         setupLogoutObserver()
+    }
+    
+    private func handleFirstInstall() {
+        let hasLaunchedBefore = (try? storageManager.get(
+            forKey: hasLaunchedBeforeKey,
+            as: Bool.self,
+            from: .standard
+        )) ?? false
+        
+        if !hasLaunchedBefore {
+            try? storageManager.clearAll()
+            try? storageManager.save(true, forKey: hasLaunchedBeforeKey, in: .standard)
+        }
     }
     
     func checkAuthentication() {
