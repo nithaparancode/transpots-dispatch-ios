@@ -11,6 +11,14 @@ struct OrdersView: View {
             contentView
                 .background(theme.colors.background)
                 .navigationTitle("Orders")
+                .toolbar {
+                    ToolbarItem(placement: .principal) {
+                        statusSegmentedControl
+                    }
+                }
+                .navigationDestination(for: OrdersRoute.self) { route in
+                    coordinator.view(for: route)
+                }
                 .onAppear {
                     if case .idle = viewModel.state {
                         viewModel.loadOrders()
@@ -21,19 +29,15 @@ struct OrdersView: View {
     
     @ViewBuilder
     private var contentView: some View {
-        VStack(spacing: 0) {
-            statusSegmentedControl
-            
-            switch viewModel.state {
-            case .idle:
-                Color.clear
-            case .loading:
-                loadingView
-            case .failed(let error):
-                errorView(message: error)
-            case .loaded(let orders):
-                ordersList(orders)
-            }
+        switch viewModel.state {
+        case .idle:
+            Color.clear
+        case .loading:
+            loadingView
+        case .failed(let error):
+            errorView(message: error)
+        case .loaded(let orders):
+            ordersList(orders)
         }
     }
     
@@ -43,7 +47,6 @@ struct OrdersView: View {
             Text("Archived").tag(OrderStatus.archived)
         }
         .pickerStyle(.segmented)
-        .padding(theme.spacing.md)
         .onChange(of: viewModel.selectedStatus) { _, newValue in
             viewModel.switchStatus(to: newValue)
         }
@@ -103,7 +106,9 @@ struct OrdersView: View {
                 ScrollView {
                     LazyVStack(spacing: theme.spacing.md) {
                         ForEach(orders) { order in
-                            OrderRowView(order: order)
+                            OrderRowView(order: order) {
+                                coordinator.push(.orderDetail(orderId: order.orderId))
+                            }
                         }
                     }
                     .padding(theme.spacing.md)
@@ -136,8 +141,16 @@ struct OrdersView: View {
 struct OrderRowView: View {
     @Environment(\.theme) var theme
     let order: Order
+    var onTap: () -> Void = {}
     
     var body: some View {
+        Button(action: onTap) {
+            rowContent
+        }
+        .buttonStyle(PlainButtonStyle())
+    }
+    
+    private var rowContent: some View {
         VStack(alignment: .leading, spacing: theme.spacing.sm) {
             HStack {
                 Text(order.userOrderId)

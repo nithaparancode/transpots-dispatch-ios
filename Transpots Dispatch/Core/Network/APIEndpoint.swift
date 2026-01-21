@@ -8,6 +8,8 @@ enum APIEndpoint {
     case getUserByEmail(email: String)
     case dashboardSummary
     case fetchOrders(status: String, page: Int, size: Int)
+    case getOrderDetail(orderId: Int)
+    case updateOrder(orderId: Int)
     
     private var baseURL: String {
         switch self {
@@ -34,6 +36,8 @@ enum APIEndpoint {
             return "/dashboard/summary"
         case .fetchOrders(let status, let page, let size):
             return "/dispatch?status=\(status)&page=\(page)&size=\(size)"
+        case .getOrderDetail(let orderId), .updateOrder(let orderId):
+            return "/orders/\(orderId)"
         }
     }
     

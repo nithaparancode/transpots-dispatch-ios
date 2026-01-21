@@ -24,7 +24,12 @@ final class OrdersCoordinator: Coordinator, ObservableObject {
     func view(for route: OrdersRoute) -> some View {
         switch route {
         case .orderDetail(let orderId):
-            Text("Order Detail: \(orderId)")
+            OrderDetailView(
+                viewModel: OrderDetailViewModel(
+                    orderId: orderId,
+                    orderService: OrderService()
+                )
+            )
         }
     }
 }
