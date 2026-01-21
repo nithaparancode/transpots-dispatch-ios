@@ -47,6 +47,32 @@ final class NetworkManager {
         }
     }
     
+    func request<T: Decodable, E: Encodable>(
+        _ endpoint: APIEndpoint,
+        method: HTTPMethod = .get,
+        parameters: E? = nil,
+        headers: HTTPHeaders? = nil
+    ) async throws -> T {
+        return try await withCheckedThrowingContinuation { continuation in
+            session.request(
+                endpoint.url,
+                method: method,
+                parameters: parameters,
+                encoder: JSONParameterEncoder.default,
+                headers: headers
+            )
+            .validate()
+            .responseDecodable(of: T.self) { response in
+                switch response.result {
+                case .success(let value):
+                    continuation.resume(returning: value)
+                case .failure(let error):
+                    continuation.resume(throwing: self.handleError(error, response: response.response))
+                }
+            }
+        }
+    }
+    
     func request(
         _ endpoint: APIEndpoint,
         method: HTTPMethod = .get,

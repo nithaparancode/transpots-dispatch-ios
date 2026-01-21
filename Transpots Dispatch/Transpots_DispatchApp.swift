@@ -7,42 +7,77 @@
 
 import SwiftUI
 import Foundation
-import Combine
+import SwiftUI
 import TranspotsUI
+import Combine
 
 @main
 struct Transpots_DispatchApp: App {
     @StateObject private var appState = AppState()
-    @StateObject private var appTheme = AppTheme.shared
     
     var body: some Scene {
         WindowGroup {
             RootView()
                 .environmentObject(appState)
-                .environmentObject(appTheme)
-                .environment(\.theme, appTheme.currentTheme == .light ? Theme.light : Theme.dark)
+                .environment(\.theme, AppTheme.shared.currentTheme == .light ? .light : .dark)
+                .onAppear {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                        withAnimation {
+                            appState.isLaunchScreenActive = false
+                        }
+                    }
+                }
         }
     }
 }
 
-final class AppState: ObservableObject {
+class AppState: ObservableObject {
     @Published var isLaunchScreenActive = true
+    @Published var isAuthenticated = false
+    
+    private var cancellables = Set<AnyCancellable>()
     
     init() {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-            self.isLaunchScreenActive = false
-        }
+        checkAuthentication()
+        setupLogoutObserver()
+    }
+    
+    func checkAuthentication() {
+        isAuthenticated = TokenManager.shared.accessToken != nil
+    }
+    
+    private func setupLogoutObserver() {
+        NotificationCenter.default.publisher(for: .userDidLogout)
+            .sink { [weak self] _ in
+                self?.isAuthenticated = false
+            }
+            .store(in: &cancellables)
+    }
+    
+    func login() {
+        isAuthenticated = true
     }
 }
 
 struct RootView: View {
     @EnvironmentObject var appState: AppState
+    @StateObject private var authCoordinator = AuthCoordinator()
     
     var body: some View {
-        if appState.isLaunchScreenActive {
-            LaunchScreenView()
-        } else {
-            MainTabView()
+        Group {
+            if appState.isLaunchScreenActive {
+                LaunchScreenView()
+            } else if appState.isAuthenticated {
+                MainTabView()
+            } else {
+                LoginView(
+                    viewModel: LoginViewModel(authService: AuthService()),
+                    coordinator: authCoordinator
+                )
+                .onReceive(NotificationCenter.default.publisher(for: .userDidLogin)) { _ in
+                    appState.login()
+                }
+            }
         }
     }
 }
