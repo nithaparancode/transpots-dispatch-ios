@@ -1,33 +1,33 @@
 import SwiftUI
 import Combine
 
-final class AppTheme: ObservableObject {
-    static let shared = AppTheme()
+public final class AppTheme: ObservableObject {
+    public static let shared = AppTheme()
     
-    @Published var currentTheme: ThemeMode = .light
+    @Published public var currentTheme: ThemeMode = .light
     
     private init() {}
     
-    enum ThemeMode {
+    public enum ThemeMode {
         case light
         case dark
     }
 }
 
-struct Theme {
-    let colors: ThemeColors
-    let fonts: ThemeFonts
-    let spacing: ThemeSpacing
-    let radius: ThemeRadius
+public struct Theme {
+    public let colors: ThemeColors
+    public let fonts: ThemeFonts
+    public let spacing: ThemeSpacing
+    public let radius: ThemeRadius
     
-    static let light = Theme(
+    public static let light = Theme(
         colors: .light,
         fonts: .default,
         spacing: .default,
         radius: .default
     )
     
-    static let dark = Theme(
+    public static let dark = Theme(
         colors: .dark,
         fonts: .default,
         spacing: .default,
@@ -35,20 +35,20 @@ struct Theme {
     )
 }
 
-struct ThemeColors {
-    let primary: Color
-    let secondary: Color
-    let accent: Color
-    let background: Color
-    let secondaryBackground: Color
-    let text: Color
-    let secondaryText: Color
-    let success: Color
-    let warning: Color
-    let error: Color
-    let border: Color
+public struct ThemeColors {
+    public let primary: Color
+    public let secondary: Color
+    public let accent: Color
+    public let background: Color
+    public let secondaryBackground: Color
+    public let text: Color
+    public let secondaryText: Color
+    public let success: Color
+    public let warning: Color
+    public let error: Color
+    public let border: Color
     
-    static let light = ThemeColors(
+    public static let light = ThemeColors(
         primary: Color(hex: "007AFF"),
         secondary: Color(hex: "5856D6"),
         accent: Color(hex: "FF9500"),
@@ -62,7 +62,7 @@ struct ThemeColors {
         border: Color(hex: "C6C6C8")
     )
     
-    static let dark = ThemeColors(
+    public static let dark = ThemeColors(
         primary: Color(hex: "0A84FF"),
         secondary: Color(hex: "5E5CE6"),
         accent: Color(hex: "FF9F0A"),
@@ -77,20 +77,20 @@ struct ThemeColors {
     )
 }
 
-struct ThemeFonts {
-    let largeTitle: Font
-    let title: Font
-    let title2: Font
-    let title3: Font
-    let headline: Font
-    let body: Font
-    let callout: Font
-    let subheadline: Font
-    let footnote: Font
-    let caption: Font
-    let caption2: Font
+public struct ThemeFonts {
+    public let largeTitle: Font
+    public let title: Font
+    public let title2: Font
+    public let title3: Font
+    public let headline: Font
+    public let body: Font
+    public let callout: Font
+    public let subheadline: Font
+    public let footnote: Font
+    public let caption: Font
+    public let caption2: Font
     
-    static let `default` = ThemeFonts(
+    public static let `default` = ThemeFonts(
         largeTitle: .system(size: 34, weight: .bold),
         title: .system(size: 28, weight: .bold),
         title2: .system(size: 22, weight: .bold),
@@ -105,29 +105,29 @@ struct ThemeFonts {
     )
 }
 
-struct ThemeSpacing {
-    let xs: CGFloat = 4
-    let sm: CGFloat = 8
-    let md: CGFloat = 16
-    let lg: CGFloat = 24
-    let xl: CGFloat = 32
-    let xxl: CGFloat = 48
+public struct ThemeSpacing {
+    public let xs: CGFloat = 4
+    public let sm: CGFloat = 8
+    public let md: CGFloat = 16
+    public let lg: CGFloat = 24
+    public let xl: CGFloat = 32
+    public let xxl: CGFloat = 48
     
-    static let `default` = ThemeSpacing()
+    public static let `default` = ThemeSpacing()
 }
 
-struct ThemeRadius {
-    let sm: CGFloat = 4
-    let md: CGFloat = 8
-    let lg: CGFloat = 12
-    let xl: CGFloat = 16
-    let xxl: CGFloat = 24
-    let full: CGFloat = 9999
+public struct ThemeRadius {
+    public let sm: CGFloat = 4
+    public let md: CGFloat = 8
+    public let lg: CGFloat = 12
+    public let xl: CGFloat = 16
+    public let xxl: CGFloat = 24
+    public let full: CGFloat = 9999
     
-    static let `default` = ThemeRadius()
+    public static let `default` = ThemeRadius()
 }
 
-extension Color {
+public extension Color {
     init(hex: String) {
         let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
         var int: UInt64 = 0

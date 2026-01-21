@@ -168,16 +168,126 @@ final class MyViewModel: ObservableObject {
 - ✅ Views should be dumb - only UI logic
 - ✅ ViewModels handle business logic and state
 - ✅ Coordinators handle navigation flow
+- ✅ Use ViewState enum for each ViewModel (idle, loading, loaded, failed)
+- ✅ UI should consume data only through ViewState enum
 - ✅ Use `@StateObject` for owned objects, `@ObservedObject` for injected
 - ✅ Keep ViewModels testable (no SwiftUI dependencies)
 - ❌ **NEVER** put business logic in Views
 - ❌ **NEVER** put navigation logic in ViewModels
 - ❌ **NEVER** put UI logic in ViewModels
+- ❌ **NEVER** use separate `isLoading`, `error`, `data` properties (use ViewState enum instead)
 
-### 7. Network Layer Rules
-- ✅ **ALWAYS** use `NetworkManager.shared.request()` for API calls
+**ViewState Pattern:**
+```swift
+// In ViewModel
+enum ViewState {
+    case idle
+    case loading
+    case loaded(DataType)
+    case failed(String)
+}
+
+@Published var state: ViewState = .idle
+
+func loadData() {
+    state = .loading
+    Task { @MainActor in
+        do {
+            let data = try await service.fetchData()
+            state = .loaded(data)
+        } catch {
+            state = .failed(error.localizedDescription)
+        }
+    }
+}
+
+// In View
+switch viewModel.state {
+case .idle:
+    EmptyView()
+case .loading:
+    ProgressView()
+case .loaded(let data):
+    ContentView(data: data)
+case .failed(let error):
+    ErrorView(message: error)
+}
+```
+
+### 7. Service Layer Rules
+- ✅ **ALWAYS** create services for API calls and business logic
+- ✅ Services should conform to a protocol (e.g., `DashboardServiceProtocol`)
+- ✅ Organize services by domain/feature in `Core/Services/{Feature}/`
+- ✅ Place related models with their services (e.g., `Core/Services/Dashboard/DashboardModels.swift`)
+- ✅ Inject services into ViewModels via initializer (dependency injection)
+- ✅ Services use `NetworkManager.shared.request()` for API calls
+- ✅ Keep ViewModels thin - business logic goes in services
+- ✅ Services should be testable (protocol-based)
+- ✅ Trigger data loading in view's `.onAppear`, not in ViewModel init
+- ❌ **NEVER** put API calls directly in ViewModels
+- ❌ **NEVER** put business logic in Views
+- ❌ **NEVER** create services without protocols
+- ❌ **NEVER** scatter models across multiple locations
+- ❌ **NEVER** use default parameters in ViewModel init (e.g., `= DashboardService()`)
+- ❌ **NEVER** call loading methods in ViewModel init
+
+**Example:**
+```swift
+// In Core/Services/Dashboard/DashboardModels.swift
+struct DashboardSummary: Codable {
+    let activeOrders: Int
+    let activeTrips: Int
+}
+
+// In Core/Services/Dashboard/DashboardService.swift
+protocol DashboardServiceProtocol: Service {
+    func fetchDashboardSummary() async throws -> DashboardSummary
+}
+
+final class DashboardService: DashboardServiceProtocol {
+    private let networkManager: NetworkManager
+    
+    init(networkManager: NetworkManager = .shared) {
+        self.networkManager = networkManager
+    }
+    
+    func fetchDashboardSummary() async throws -> DashboardSummary {
+        return try await networkManager.request(.dashboardSummary, method: .get)
+    }
+}
+
+// In Features/Home/ViewModels/HomeViewModel.swift
+final class HomeViewModel: ObservableObject {
+    private let dashboardService: DashboardServiceProtocol
+    
+    init(dashboardService: DashboardServiceProtocol) {
+        self.dashboardService = dashboardService
+        // Don't call loadDashboard() here - let the view trigger it
+    }
+    
+    func loadDashboard() {
+        currentTask = Task { @MainActor in
+            self.data = try await dashboardService.fetchDashboardSummary()
+        }
+    }
+}
+
+// In View - explicit service injection
+HomeView(
+    viewModel: HomeViewModel(dashboardService: DashboardService()),
+    coordinator: homeCoordinator
+)
+.onAppear {
+    if viewModel.data == nil {
+        viewModel.loadDashboard()
+    }
+}
+```
+
+### 8. Network Layer Rules
+- ✅ **ALWAYS** use `NetworkManager.shared.request()` for API calls (via Services)
 - ✅ Define all endpoints in `APIEndpoint.swift`
-- ✅ Network calls should be in ViewModels or Services
+- ✅ Network calls should ONLY be in Services, never in ViewModels
 - ✅ Handle errors with proper error types
 - ✅ JWT tokens are automatically injected
 - ✅ 401 errors trigger automatic token refresh
@@ -185,7 +295,7 @@ final class MyViewModel: ObservableObject {
 - ❌ **NEVER** manually handle JWT token injection
 - ❌ **NEVER** hardcode API URLs
 
-### 8. Code Organization Rules
+### 9. Code Organization Rules
 - ✅ **ALWAYS** follow the feature-based folder structure
 - ✅ Each feature has: Coordinator/, ViewModels/, Views/ folders
 - ✅ Place shared code in Core/
@@ -194,17 +304,52 @@ final class MyViewModel: ObservableObject {
 - ❌ **NEVER** create files outside the established structure
 - ❌ **NEVER** mix concerns (e.g., network code in views)
 
-### 9. SwiftUI Best Practices
+### 10. SwiftUI Best Practices
 - ✅ Use `@Environment` for dependency injection
 - ✅ Use `@StateObject` for object ownership
 - ✅ Use `@ObservedObject` for passed objects
 - ✅ Use `@State` for local view state
+- ✅ Extract complex views into private computed properties to keep `body` clean
+- ✅ Use `@ViewBuilder` for private properties that return conditional views
 - ✅ Extract complex views into separate components
-- ✅ Use `ViewBuilder` for conditional view logic
+- ✅ Use `.background()` modifier instead of ZStack for simple backgrounds
+- ✅ Use `Group` for conditional content without layout effects
 - ❌ **NEVER** create massive view bodies (>50 lines)
 - ❌ **NEVER** use force unwrapping (!)
+- ❌ **NEVER** use ZStack when a simple modifier will do (e.g., `.background()`)
 
-### 10. Naming Conventions
+**Clean Body Pattern:**
+```swift
+struct MyView: View {
+    var body: some View {
+        NavigationStack {
+            contentView
+                .navigationTitle("Title")
+                .toolbar { toolbarContent }
+        }
+    }
+    
+    @ViewBuilder
+    private var contentView: some View {
+        switch viewModel.state {
+        case .loading: loadingView
+        case .loaded(let data): dataView(data)
+        }
+    }
+    
+    private var loadingView: some View {
+        ProgressView()
+    }
+    
+    private func dataView(_ data: Data) -> some View {
+        ScrollView {
+            // content
+        }
+    }
+}
+```
+
+### 11. Naming Conventions
 - ✅ Views: `*View.swift` (e.g., `HomeView.swift`)
 - ✅ ViewModels: `*ViewModel.swift` (e.g., `HomeViewModel.swift`)
 - ✅ Coordinators: `*Coordinator.swift` (e.g., `HomeCoordinator.swift`)
@@ -242,43 +387,38 @@ transpots-dispatch-ios/
 │   │   │       └── RefreshTokenResponse.swift
 │   │   ├── Managers/
 │   │   │   └── TokenManager.swift         # Secure token storage (Keychain)
+│   │   ├── Services/
+│   │   │   ├── Service.swift              # Base service protocol
+│   │   │   └── Dashboard/
+│   │   │       ├── DashboardService.swift # Dashboard API service
+│   │   │       └── DashboardModels.swift  # Dashboard data models
+│   │   │   # Add more service folders as needed (Orders/, Profile/, etc.)
 │   │   ├── Extensions/
 │   │   │   └── Notification+Extensions.swift
-│   │   ├── Theme/
-│   │   │   ├── AppTheme.swift             # Theme definitions & environment
-│   │   │   └── ThemeEnvironmentKey.swift  # Theme environment key
 │   │   └── Launch/
 │   │       └── LaunchScreenView.swift     # Launch screen
 │   ├── Features/
-│   │   ├── Home/
-│   │   │   ├── Coordinator/
-│   │   │   │   └── HomeCoordinator.swift
-│   │   │   ├── ViewModels/
-│   │   │   │   └── HomeViewModel.swift
-│   │   │   └── Views/
-│   │   │       └── HomeView.swift
-│   │   ├── Orders/
-│   │   │   ├── Coordinator/
-│   │   │   │   └── OrdersCoordinator.swift
-│   │   │   ├── ViewModels/
-│   │   │   │   └── OrdersViewModel.swift
-│   │   │   └── Views/
-│   │   │       └── OrdersView.swift
-│   │   └── Profile/
+│   │   └── Home/
 │   │       ├── Coordinator/
-│   │       │   └── ProfileCoordinator.swift
+│   │       │   └── HomeCoordinator.swift
 │   │       ├── ViewModels/
-│   │       │   └── ProfileViewModel.swift
+│   │       │   └── HomeViewModel.swift
 │   │       └── Views/
-│   │           └── ProfileView.swift
+│   │           └── HomeView.swift
+│   │           └── HomeDetailView.swift (example)
+│   │   # Add more features as needed (Orders/, Profile/, Trips/, etc.)
 │   └── Transpots_DispatchApp.swift        # App entry point
 │
 └── TranspotsUI/                           # Reusable UI module (Swift Package)
     ├── Package.swift                      # Package manifest
     └── Sources/
         └── TranspotsUI/
-            └── AppSymbols.swift           # Centralized SF Symbols
-            # Add reusable components here:
+            ├── AppSymbols.swift           # Centralized SF Symbols
+            ├── AppTheme.swift             # Theme system (colors, fonts, spacing, radius)
+            ├── ThemeEnvironmentKey.swift  # Theme environment key
+            ├── StatCard.swift             # Stat card component
+            └── SectionCard.swift          # Section card component
+            # Add more reusable components here:
             # - Buttons (PrimaryButton, SecondaryButton, etc.)
             # - Cards (OrderCard, ProfileCard, etc.)
             # - Loading indicators

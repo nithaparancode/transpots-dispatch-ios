@@ -2,19 +2,33 @@ import Foundation
 import Combine
 
 final class HomeViewModel: ObservableObject {
-    @Published var isLoading: Bool = false
-    @Published var errorMessage: String?
+    enum ViewState {
+        case idle
+        case loading
+        case loaded(DashboardSummary)
+        case failed(String)
+    }
+    
+    @Published var state: ViewState = .idle
     
     private var currentTask: Task<Void, Never>?
+    private let dashboardService: DashboardServiceProtocol
     
-    init() {}
+    init(dashboardService: DashboardServiceProtocol) {
+        self.dashboardService = dashboardService
+    }
     
-    func loadData() {
+    func loadDashboard() {
         currentTask?.cancel()
-        isLoading = true
+        state = .loading
         
         currentTask = Task { @MainActor in
-            isLoading = false
+            do {
+                let summary = try await dashboardService.fetchDashboardSummary()
+                self.state = .loaded(summary)
+            } catch {
+                self.state = .failed(error.localizedDescription)
+            }
         }
     }
     

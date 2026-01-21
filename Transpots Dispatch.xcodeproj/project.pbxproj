@@ -348,6 +348,13 @@
 		};
 /* End XCConfigurationList section */
 
+/* Begin XCLocalSwiftPackageReference section */
+		A070AC932F208B0000072B36 /* XCLocalSwiftPackageReference "TranspotsUI" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = TranspotsUI;
+		};
+/* End XCLocalSwiftPackageReference section */
+
 /* Begin XCRemoteSwiftPackageReference section */
 		A06E93CF2F20900000A120F1 /* XCRemoteSwiftPackageReference "Alamofire" */ = {
 			isa = XCRemoteSwiftPackageReference;
@@ -358,13 +365,6 @@
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
-
-/* Begin XCLocalSwiftPackageReference section */
-		A070AC932F208B0000072B36 /* XCLocalSwiftPackageReference "TranspotsUI" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = TranspotsUI;
-		};
-/* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
 		A06E93D02F20900000A120F1 /* Alamofire */ = {
