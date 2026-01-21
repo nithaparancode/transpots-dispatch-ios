@@ -6,6 +6,11 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		A070AC902F208A9800072B36 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = A06E93D02F20900000A120F1 /* Alamofire */; };
+		A070AC912F208B0000072B36 /* TranspotsUI in Frameworks */ = {isa = PBXBuildFile; productRef = A070AC922F208B0000072B36 /* TranspotsUI */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		A06E93BD2F20877600A120F1 /* Transpots Dispatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Transpots Dispatch.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -23,6 +28,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A070AC902F208A9800072B36 /* Alamofire in Frameworks */,
+				A070AC912F208B0000072B36 /* TranspotsUI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -65,6 +72,8 @@
 			);
 			name = "Transpots Dispatch";
 			packageProductDependencies = (
+				A06E93D02F20900000A120F1 /* Alamofire */,
+				A070AC922F208B0000072B36 /* TranspotsUI */,
 			);
 			productName = "Transpots Dispatch";
 			productReference = A06E93BD2F20877600A120F1 /* Transpots Dispatch.app */;
@@ -94,6 +103,10 @@
 			);
 			mainGroup = A06E93B42F20877600A120F1;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				A06E93CF2F20900000A120F1 /* XCRemoteSwiftPackageReference "Alamofire" */,
+				A070AC932F208B0000072B36 /* XCLocalSwiftPackageReference "TranspotsUI" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = A06E93BE2F20877600A120F1 /* Products */;
 			projectDirPath = "";
@@ -261,6 +274,7 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -293,6 +307,7 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -332,6 +347,37 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		A06E93CF2F20900000A120F1 /* XCRemoteSwiftPackageReference "Alamofire" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Alamofire/Alamofire.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.9.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		A070AC932F208B0000072B36 /* XCLocalSwiftPackageReference "TranspotsUI" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = TranspotsUI;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		A06E93D02F20900000A120F1 /* Alamofire */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A06E93CF2F20900000A120F1 /* XCRemoteSwiftPackageReference "Alamofire" */;
+			productName = Alamofire;
+		};
+		A070AC922F208B0000072B36 /* TranspotsUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A070AC932F208B0000072B36 /* XCLocalSwiftPackageReference "TranspotsUI" */;
+			productName = TranspotsUI;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = A06E93B52F20877600A120F1 /* Project object */;
 }
