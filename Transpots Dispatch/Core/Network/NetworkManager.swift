@@ -28,22 +28,35 @@ final class NetworkManager {
         headers: HTTPHeaders? = nil
     ) async throws -> T {
         return try await withCheckedThrowingContinuation { continuation in
-            session.request(
+            let request = session.request(
                 endpoint.url,
                 method: method,
                 parameters: parameters,
                 encoding: encoding,
                 headers: headers
             )
-            .validate()
-            .responseDecodable(of: T.self) { response in
-                switch response.result {
-                case .success(let value):
-                    continuation.resume(returning: value)
-                case .failure(let error):
-                    continuation.resume(throwing: self.handleError(error, response: response.response))
+            
+            request
+                .cURLDescription { description in
+                    print("🔵 cURL Request:\n\(description)")
                 }
-            }
+                .validate()
+                .responseDecodable(of: T.self) { response in
+                    if let data = response.data, let responseString = String(data: data, encoding: .utf8) {
+                        print("🔵 Response Body: \(responseString)")
+                    }
+                    if let httpResponse = response.response {
+                        print("🔵 Status Code: \(httpResponse.statusCode)")
+                        print("🔵 Response Headers: \(httpResponse.allHeaderFields)")
+                    }
+                    
+                    switch response.result {
+                    case .success(let value):
+                        continuation.resume(returning: value)
+                    case .failure(let error):
+                        continuation.resume(throwing: self.handleError(error, response: response.response))
+                    }
+                }
         }
     }
     

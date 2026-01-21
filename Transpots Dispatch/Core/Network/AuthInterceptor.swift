@@ -14,6 +14,10 @@ final class AuthInterceptor: RequestInterceptor {
             urlRequest.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
         
+        if let userId = TokenManager.shared.userId {
+            urlRequest.setValue(userId, forHTTPHeaderField: "userId")
+        }
+        
         completion(.success(urlRequest))
     }
     

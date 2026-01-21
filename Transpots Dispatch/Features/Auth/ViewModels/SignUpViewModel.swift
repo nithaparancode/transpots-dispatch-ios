@@ -18,9 +18,11 @@ final class SignUpViewModel: ObservableObject {
     
     private var currentTask: Task<Void, Never>?
     private let authService: AuthServiceProtocol
+    private let userService: UserServiceProtocol
     
-    init(authService: AuthServiceProtocol) {
+    init(authService: AuthServiceProtocol, userService: UserServiceProtocol = UserService()) {
         self.authService = authService
+        self.userService = userService
     }
     
     func signUp() {
@@ -45,6 +47,10 @@ final class SignUpViewModel: ObservableObject {
                     accessToken: response.accessToken,
                     refreshToken: response.refreshToken ?? ""
                 )
+                
+                let user = try await userService.getUserByEmail(email)
+                TokenManager.shared.userId = user.id
+                
                 self.state = .success
                 NotificationCenter.default.post(name: .userDidLogin, object: nil)
             } catch {
