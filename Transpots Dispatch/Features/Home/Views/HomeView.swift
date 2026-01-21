@@ -119,7 +119,7 @@ struct HomeView: View {
         SectionCard(title: "Today's Orders") {
             VStack(spacing: theme.spacing.sm) {
                 ForEach(orders) { order in
-                    OrderRowView(order: order)
+                    TodayOrderRowView(order: order)
                 }
             }
         }
@@ -172,8 +172,8 @@ struct HomeView: View {
     }
 }
 
-// MARK: - Order Row View
-struct OrderRowView: View {
+// MARK: - Today Order Row View
+struct TodayOrderRowView: View {
     @Environment(\.theme) var theme
     let order: TodayOrder
     

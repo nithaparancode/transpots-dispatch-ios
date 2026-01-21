@@ -101,13 +101,28 @@ struct RootView: View {
 
 struct MainTabView: View {
     @StateObject private var homeCoordinator = HomeCoordinator()
+    @StateObject private var ordersCoordinator = OrdersCoordinator()
     @Environment(\.theme) var theme
     
     var body: some View {
-        HomeView(
-            viewModel: HomeViewModel(dashboardService: DashboardService()),
-            coordinator: homeCoordinator
-        )
+        TabView {
+            HomeView(
+                viewModel: HomeViewModel(dashboardService: DashboardService()),
+                coordinator: homeCoordinator
+            )
+            .tabItem {
+                Label("Home", systemImage: "house.fill")
+            }
+            
+            OrdersView(
+                viewModel: OrdersViewModel(orderService: OrderService()),
+                coordinator: ordersCoordinator
+            )
+            .tabItem {
+                Label("Orders", systemImage: "doc.text.fill")
+            }
+        }
+        .tint(theme.colors.primary)
         .onReceive(NotificationCenter.default.publisher(for: .userDidLogout)) { _ in
             TokenManager.shared.clearTokens()
             homeCoordinator.popToRoot()

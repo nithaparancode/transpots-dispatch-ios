@@ -1,0 +1,30 @@
+import Foundation
+import Alamofire
+
+protocol OrderServiceProtocol: Service {
+    func fetchOrders(status: OrderStatus, page: Int, size: Int) async throws -> OrdersResponse
+}
+
+final class OrderService: OrderServiceProtocol {
+    private let networkManager: NetworkManager
+    
+    init(networkManager: NetworkManager = .shared) {
+        self.networkManager = networkManager
+    }
+    
+    func fetchOrders(status: OrderStatus, page: Int, size: Int) async throws -> OrdersResponse {
+        print("📡 Fetching \(status.rawValue) orders - page: \(page), size: \(size)")
+        
+        do {
+            let response: OrdersResponse = try await networkManager.request(
+                .fetchOrders(status: status.rawValue, page: page, size: size),
+                method: .get
+            )
+            print("✅ Orders fetched: \(response.orders.count) orders")
+            return response
+        } catch {
+            print("❌ Orders API error: \(error)")
+            throw error
+        }
+    }
+}
