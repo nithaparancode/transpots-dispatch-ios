@@ -102,6 +102,7 @@ struct RootView: View {
 struct MainTabView: View {
     @StateObject private var homeCoordinator = HomeCoordinator()
     @StateObject private var ordersCoordinator = OrdersCoordinator()
+    @StateObject private var profileViewModel = ProfileViewModel()
     @Environment(\.theme) var theme
     
     var body: some View {
@@ -121,6 +122,11 @@ struct MainTabView: View {
             .tabItem {
                 Label("Orders", systemImage: "doc.text.fill")
             }
+            
+            ProfileView(viewModel: profileViewModel)
+                .tabItem {
+                    Label("Profile", systemImage: "person.fill")
+                }
         }
         .tint(theme.colors.primary)
         .onReceive(NotificationCenter.default.publisher(for: .userDidLogout)) { _ in

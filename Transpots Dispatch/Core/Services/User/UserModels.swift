@@ -1,6 +1,6 @@
 import Foundation
 
-struct User: Codable {
+struct User: Codable, Equatable {
     let id: String
     let companyName: String?
     let streetNumber: String?
@@ -25,4 +25,23 @@ struct User: Codable {
     let outMail: String?
     let verified: Bool?
     let otp: Int?
+    
+    // Profile-related fields
+    let userId: Int?
+    let firstName: String?
+    let lastName: String?
+    let phoneNumber: String?
+    let companyId: Int?
+    let role: String?
+    let status: String?
+    let updatedAt: String?
+    
+    var fullName: String {
+        let first = firstName ?? ""
+        let last = lastName ?? ""
+        if first.isEmpty && last.isEmpty {
+            return companyName ?? "User"
+        }
+        return "\(first) \(last)".trimmingCharacters(in: .whitespaces)
+    }
 }

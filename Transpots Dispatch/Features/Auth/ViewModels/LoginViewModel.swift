@@ -42,6 +42,9 @@ final class LoginViewModel: ObservableObject {
                 let user = try await userService.getUserByEmail(email)
                 TokenManager.shared.userId = user.id
                 
+                // Save user email for profile retrieval
+                try? StorageManager.shared.save(email, forKey: "com.transpots.userEmail", in: .secure)
+                
                 self.state = .success
                 NotificationCenter.default.post(name: .userDidLogin, object: nil)
             } catch {
