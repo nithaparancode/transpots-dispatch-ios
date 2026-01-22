@@ -21,9 +21,7 @@ struct HomeView: View {
                     coordinator.view(for: route)
                 }
                 .onAppear {
-                    if case .idle = viewModel.state {
-                        viewModel.loadDashboard()
-                    }
+                    viewModel.loadDashboard()
                 }
         }
     }

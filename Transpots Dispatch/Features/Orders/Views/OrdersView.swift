@@ -20,9 +20,7 @@ struct OrdersView: View {
                     coordinator.view(for: route)
                 }
                 .onAppear {
-                    if case .idle = viewModel.state {
-                        viewModel.loadOrders()
-                    }
+                    viewModel.loadOrders()
                 }
         }
     }

@@ -20,9 +20,7 @@ struct TripsView: View {
                     coordinator.view(for: route)
                 }
                 .onAppear {
-                    if case .idle = viewModel.state {
-                        viewModel.loadTrips()
-                    }
+                    viewModel.loadTrips()
                 }
         }
     }
