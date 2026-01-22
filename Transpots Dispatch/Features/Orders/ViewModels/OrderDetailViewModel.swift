@@ -137,6 +137,59 @@ final class OrderDetailViewModel: ObservableObject {
     func saveOrder() {
         guard let originalOrder = editableOrder else { return }
         
+        // Build updated orderEvents from edited fields
+        var updatedEvents: [OrderEvent] = []
+        
+        // Update pickup event
+        if let pickupEvent = originalOrder.orderEvents.first(where: { $0.eventType == "PICKUP" }) {
+            let updatedPickup = OrderEvent(
+                orderEventId: pickupEvent.orderEventId,
+                name: pickupCompanyName,
+                address: pickupAddress,
+                startTime: pickupEvent.startTime,
+                endTime: pickupEvent.endTime,
+                eventType: "PICKUP",
+                loadType: pickupLoadType.isEmpty ? nil : pickupLoadType,
+                loadCount: Int(pickupLoadCount),
+                temperatureValue: Double(pickupTemperature),
+                temperatureUnit: pickupEvent.temperatureUnit,
+                hazmat: pickupHazmat.isEmpty ? nil : pickupHazmat,
+                weightValue: Double(pickupWeight),
+                weightUnit: pickupEvent.weightUnit,
+                pickupNumber: pickupNumber.isEmpty ? nil : pickupNumber,
+                notes: pickupNotes.isEmpty ? nil : pickupNotes,
+                tractorId: pickupEvent.tractorId,
+                isScheduled: pickupEvent.isScheduled,
+                status: pickupEvent.status
+            )
+            updatedEvents.append(updatedPickup)
+        }
+        
+        // Update delivery event
+        if let deliveryEvent = originalOrder.orderEvents.first(where: { $0.eventType == "DELIVERY" }) {
+            let updatedDelivery = OrderEvent(
+                orderEventId: deliveryEvent.orderEventId,
+                name: deliveryCompanyName,
+                address: deliveryAddress,
+                startTime: deliveryEvent.startTime,
+                endTime: deliveryEvent.endTime,
+                eventType: "DELIVERY",
+                loadType: deliveryLoadType.isEmpty ? nil : deliveryLoadType,
+                loadCount: Int(deliveryLoadCount),
+                temperatureValue: Double(deliveryTemperature),
+                temperatureUnit: deliveryEvent.temperatureUnit,
+                hazmat: deliveryHazmat.isEmpty ? nil : deliveryHazmat,
+                weightValue: Double(deliveryWeight),
+                weightUnit: deliveryEvent.weightUnit,
+                pickupNumber: deliveryNumber.isEmpty ? nil : deliveryNumber,
+                notes: deliveryNotes.isEmpty ? nil : deliveryNotes,
+                tractorId: deliveryEvent.tractorId,
+                isScheduled: deliveryEvent.isScheduled,
+                status: deliveryEvent.status
+            )
+            updatedEvents.append(updatedDelivery)
+        }
+        
         // Build updated order from editable fields
         let updatedOrder = Order(
             orderId: originalOrder.orderId,
@@ -156,7 +209,7 @@ final class OrderDetailViewModel: ObservableObject {
             notes: notes.isEmpty ? nil : notes,
             accountPayableEmail: accountPayableEmail.isEmpty ? nil : accountPayableEmail,
             currency: currency.isEmpty ? nil : currency,
-            orderEvents: originalOrder.orderEvents,
+            orderEvents: updatedEvents,
             exceptions: originalOrder.exceptions
         )
         

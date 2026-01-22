@@ -71,19 +71,39 @@ final class NetworkManager {
         headers: HTTPHeaders? = nil
     ) async throws -> T {
         return try await withCheckedThrowingContinuation { continuation in
-            session.request(
+            let request = session.request(
                 endpoint.url,
                 method: method,
                 parameters: parameters,
                 encoder: JSONParameterEncoder.default,
                 headers: headers
             )
+            
+            // Debug logging
+            print("🌐 API Request: \(method.rawValue) \(endpoint.url)")
+            if let parameters = parameters {
+                if let jsonData = try? JSONEncoder().encode(parameters),
+                   let jsonString = String(data: jsonData, encoding: .utf8) {
+                    print("📦 Request Body: \(jsonString)")
+                }
+            }
+            request.cURLDescription { description in
+                print("🔧 cURL: \(description)")
+            }
+            
+            request
             .validate()
             .responseDecodable(of: T.self) { response in
                 switch response.result {
                 case .success(let value):
+                    print("✅ Response received for \(endpoint.url)")
+                    if let data = response.data,
+                       let jsonString = String(data: data, encoding: .utf8) {
+                        print("📥 Response Body: \(jsonString)")
+                    }
                     continuation.resume(returning: value)
                 case .failure(let error):
+                    print("❌ Request failed for \(endpoint.url): \(error)")
                     continuation.resume(throwing: self.handleError(error, response: response.response))
                 }
             }
