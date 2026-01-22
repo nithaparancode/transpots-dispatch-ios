@@ -11,11 +11,12 @@ import TranspotsUI
 struct MainTabView: View {
     @StateObject private var homeCoordinator = HomeCoordinator()
     @StateObject private var ordersCoordinator = OrdersCoordinator()
+    @StateObject private var tripsCoordinator = TripsCoordinator()
     @StateObject private var profileViewModel = ProfileViewModel()
     @Environment(\.theme) var theme
     
     private var shouldHideTabBar: Bool {
-        homeCoordinator.path.count > 0 || ordersCoordinator.path.count > 0
+        homeCoordinator.path.count > 0 || ordersCoordinator.path.count > 0 || tripsCoordinator.path.count > 0
     }
     
     var body: some View {
@@ -34,6 +35,13 @@ struct MainTabView: View {
                         Color.clear
                             .navigationDestination(for: OrdersRoute.self) { route in
                                 ordersCoordinator.view(for: route)
+                            }
+                    }
+                } else if tripsCoordinator.path.count > 0 {
+                    NavigationStack(path: $tripsCoordinator.path) {
+                        Color.clear
+                            .navigationDestination(for: TripsRoute.self) { route in
+                                tripsCoordinator.view(for: route)
                             }
                     }
                 }
@@ -64,6 +72,19 @@ struct MainTabView: View {
                     }
                     .tabItem {
                         Label("Orders", systemImage: "doc.text.fill")
+                    }
+                    
+                    NavigationStack(path: $tripsCoordinator.path) {
+                        TripsView(
+                            viewModel: TripsViewModel(tripService: TripService()),
+                            coordinator: tripsCoordinator
+                        )
+                        .navigationDestination(for: TripsRoute.self) { route in
+                            tripsCoordinator.view(for: route)
+                        }
+                    }
+                    .tabItem {
+                        Label("Trips", systemImage: "truck.box.fill")
                     }
                     
                     ProfileView(viewModel: profileViewModel)

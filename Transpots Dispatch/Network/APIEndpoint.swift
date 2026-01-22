@@ -10,6 +10,7 @@ enum APIEndpoint {
     case fetchOrders(status: String, page: Int, size: Int)
     case getOrderDetail(orderId: Int)
     case updateOrder(orderId: Int)
+    case fetchTrips(status: String, page: Int, size: Int, sortBy: String)
     
     private var baseURL: String {
         switch self {
@@ -38,6 +39,8 @@ enum APIEndpoint {
             return "/dispatch?status=\(status)&page=\(page)&size=\(size)"
         case .getOrderDetail(let orderId), .updateOrder(let orderId):
             return "/orders/\(orderId)"
+        case .fetchTrips(let status, let page, let size, let sortBy):
+            return "/trips?size=\(size)&page=\(page)&sortBy=\(sortBy)&status=\(status)"
         }
     }
     
