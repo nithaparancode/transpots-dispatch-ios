@@ -5,6 +5,7 @@ final class NetworkManager {
     static let shared = NetworkManager()
     
     private let session: Session
+    private let sessionWithoutInterceptor: Session
     private let interceptor: AuthInterceptor
     
     private init() {
@@ -18,6 +19,9 @@ final class NetworkManager {
             configuration: configuration,
             interceptor: interceptor
         )
+        
+        // Separate session without interceptor for refresh token calls
+        self.sessionWithoutInterceptor = Session(configuration: configuration)
     }
     
     func request<T: Decodable>(
@@ -109,6 +113,46 @@ final class NetworkManager {
                     continuation.resume()
                 }
             }
+        }
+    }
+    
+    // Special request method without interceptor for refresh token calls
+    func requestWithoutInterceptor<T: Decodable>(
+        _ endpoint: APIEndpoint,
+        method: HTTPMethod = .get,
+        parameters: Parameters? = nil,
+        encoding: ParameterEncoding = JSONEncoding.default,
+        headers: HTTPHeaders? = nil
+    ) async throws -> T {
+        return try await withCheckedThrowingContinuation { continuation in
+            let request = sessionWithoutInterceptor.request(
+                endpoint.url,
+                method: method,
+                parameters: parameters,
+                encoding: encoding,
+                headers: headers
+            )
+            
+            request
+                .cURLDescription { description in
+                    print("🔵 cURL Request (No Interceptor):\n\(description)")
+                }
+                .validate()
+                .responseDecodable(of: T.self) { response in
+                    if let data = response.data, let responseString = String(data: data, encoding: .utf8) {
+                        print("🔵 Response Body: \(responseString)")
+                    }
+                    if let httpResponse = response.response {
+                        print("🔵 Status Code: \(httpResponse.statusCode)")
+                    }
+                    
+                    switch response.result {
+                    case .success(let value):
+                        continuation.resume(returning: value)
+                    case .failure(let error):
+                        continuation.resume(throwing: self.handleError(error, response: response.response))
+                    }
+                }
         }
     }
     
