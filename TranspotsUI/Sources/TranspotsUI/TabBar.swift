@@ -1,5 +1,9 @@
 import SwiftUI
 
+#if canImport(UIKit)
+import UIKit
+#endif
+
 // MARK: - Tab Bar Item Model
 public struct TabBarItem: Identifiable, Hashable {
     public let id: String
@@ -19,6 +23,7 @@ public struct TabBar: View {
     let items: [TabBarItem]
     let style: TabBarStyle
     @Environment(\.theme) var theme
+    @Namespace private var animation
     
     public init(
         selectedTab: Binding<String>,
@@ -34,7 +39,12 @@ public struct TabBar: View {
         HStack(spacing: 0) {
             ForEach(items) { item in
                 Button(action: {
-                    withAnimation(.easeInOut(duration: 0.2)) {
+                    #if canImport(UIKit)
+                    let generator = UIImpactFeedbackGenerator(style: .light)
+                    generator.impactOccurred()
+                    #endif
+                    
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                         selectedTab = item.id
                     }
                 }) {
@@ -53,23 +63,47 @@ public struct TabBar: View {
                 if let icon = item.icon {
                     Image(systemName: icon)
                         .font(.system(size: style.iconSize, weight: isSelected(item) ? .semibold : .regular))
+                        .symbolRenderingMode(.hierarchical)
                 }
                 
                 Text(item.title)
                     .font(.system(size: style.fontSize, weight: isSelected(item) ? .semibold : .regular))
+                    .lineLimit(1)
             }
             .foregroundColor(isSelected(item) ? style.selectedColor(theme) : style.unselectedColor(theme))
             .padding(.vertical, style.verticalPadding)
+            .padding(.horizontal, 4)
             .frame(maxWidth: .infinity)
-            .background(isSelected(item) ? style.selectedBackgroundColor(theme) : Color.clear)
+            .background(
+                Group {
+                    if isSelected(item) {
+                        style.selectedBackgroundColor(theme)
+                            .matchedGeometryEffect(id: "selectedTab", in: animation)
+                    } else {
+                        Color.clear
+                    }
+                }
+            )
             .cornerRadius(style.cornerRadius)
+            .scaleEffect(isSelected(item) ? 1.0 : 0.95)
+            .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isSelected(item))
             
             if style.showIndicator {
-                Rectangle()
-                    .fill(isSelected(item) ? style.indicatorColor(theme) : Color.clear)
-                    .frame(height: style.indicatorHeight)
+                ZStack {
+                    if isSelected(item) {
+                        RoundedRectangle(cornerRadius: style.indicatorHeight / 2)
+                            .fill(style.indicatorColor(theme))
+                            .frame(height: style.indicatorHeight)
+                            .matchedGeometryEffect(id: "indicator", in: animation)
+                            .shadow(color: style.indicatorColor(theme).opacity(0.3), radius: 2, y: 1)
+                    } else {
+                        Color.clear
+                            .frame(height: style.indicatorHeight)
+                    }
+                }
             }
         }
+        .contentShape(Rectangle())
     }
     
     private func isSelected(_ item: TabBarItem) -> Bool {
@@ -120,33 +154,69 @@ public struct TabBarStyle {
         self.indicatorColor = indicatorColor
     }
     
-    public static let `default` = TabBarStyle()
+    public static let `default` = TabBarStyle(
+        fontSize: 15,
+        verticalPadding: 14,
+        indicatorHeight: 3
+    )
     
     public static let rounded = TabBarStyle(
-        verticalPadding: 10,
+        fontSize: 15,
+        verticalPadding: 12,
         spacing: 4,
-        cornerRadius: 8,
+        cornerRadius: 10,
         showIndicator: false,
-        selectedColor: { _ in .white }, selectedBackgroundColor: { $0.colors.primary }
+        selectedColor: { _ in .white },
+        selectedBackgroundColor: { $0.colors.primary }
     )
     
     public static let pills = TabBarStyle(
-        verticalPadding: 8,
-        spacing: 4,
+        fontSize: 14,
+        verticalPadding: 10,
+        spacing: 6,
         cornerRadius: 20,
         showIndicator: false,
-        selectedColor: { _ in .white }, selectedBackgroundColor: { $0.colors.primary },
+        selectedColor: { _ in .white },
+        selectedBackgroundColor: { $0.colors.primary },
         backgroundColor: { $0.colors.background }
     )
     
     public static let minimal = TabBarStyle(
+        fontSize: 15,
+        verticalPadding: 12,
         showIndicator: false,
         selectedBackgroundColor: { _ in Color.clear }
     )
     
     public static let underline = TabBarStyle(
+        fontSize: 15,
+        verticalPadding: 14,
+        indicatorHeight: 3,
         selectedBackgroundColor: { _ in Color.clear },
         backgroundColor: { _ in Color.clear }
+    )
+    
+    public static let modern = TabBarStyle(
+        fontSize: 14,
+        verticalPadding: 12,
+        spacing: 2,
+        cornerRadius: 12,
+        showIndicator: false,
+        selectedColor: { $0.colors.primary },
+        unselectedColor: { $0.colors.secondaryText },
+        selectedBackgroundColor: { $0.colors.primary.opacity(0.12) },
+        backgroundColor: { $0.colors.secondaryBackground }
+    )
+    
+    public static let gradient = TabBarStyle(
+        fontSize: 15,
+        verticalPadding: 14,
+        spacing: 2,
+        cornerRadius: 10,
+        showIndicator: false,
+        selectedColor: { _ in .white },
+        selectedBackgroundColor: { $0.colors.primary },
+        backgroundColor: { $0.colors.secondaryBackground }
     )
 }
 
@@ -154,23 +224,31 @@ public struct TabBarStyle {
 #if DEBUG
 struct TabBar_Previews: PreviewProvider {
     static var previews: some View {
-        VStack(spacing: 40) {
-            // Default Style
-            TabBarPreview(style: .default, title: "Default Style")
-            
-            // Rounded Style
-            TabBarPreview(style: .rounded, title: "Rounded Style")
-            
-            // Pills Style
-            TabBarPreview(style: .pills, title: "Pills Style")
-            
-            // Minimal Style
-            TabBarPreview(style: .minimal, title: "Minimal Style")
-            
-            // Underline Style
-            TabBarPreview(style: .underline, title: "Underline Style")
+        ScrollView {
+            VStack(spacing: 40) {
+                // Default Style
+                TabBarPreview(style: .default, title: "Default Style")
+                
+                // Modern Style
+                TabBarPreview(style: .modern, title: "Modern Style")
+                
+                // Rounded Style
+                TabBarPreview(style: .rounded, title: "Rounded Style")
+                
+                // Pills Style
+                TabBarPreview(style: .pills, title: "Pills Style")
+                
+                // Gradient Style
+                TabBarPreview(style: .gradient, title: "Gradient Style")
+                
+                // Minimal Style
+                TabBarPreview(style: .minimal, title: "Minimal Style")
+                
+                // Underline Style
+                TabBarPreview(style: .underline, title: "Underline Style")
+            }
+            .padding()
         }
-        .padding()
     }
 }
 

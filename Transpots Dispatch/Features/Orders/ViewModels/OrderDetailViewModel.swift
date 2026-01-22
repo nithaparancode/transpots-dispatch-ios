@@ -24,7 +24,7 @@ final class OrderDetailViewModel: ObservableObject {
     @Published var isEditMode: Bool = false
     @Published var editableOrder: Order?
     
-    // Editable fields
+    // Editable fields - Customer & Rate
     @Published var customerName: String = ""
     @Published var loadNumber: String = ""
     @Published var billingEmail: String = ""
@@ -37,6 +37,28 @@ final class OrderDetailViewModel: ObservableObject {
     @Published var fuelSurcharge: String = ""
     @Published var otherCharges: String = ""
     @Published var notes: String = ""
+    
+    // Editable fields - Pickup Event
+    @Published var pickupCompanyName: String = ""
+    @Published var pickupAddress: String = ""
+    @Published var pickupLoadType: String = ""
+    @Published var pickupLoadCount: String = ""
+    @Published var pickupTemperature: String = ""
+    @Published var pickupHazmat: String = ""
+    @Published var pickupNumber: String = ""
+    @Published var pickupWeight: String = ""
+    @Published var pickupNotes: String = ""
+    
+    // Editable fields - Delivery Event
+    @Published var deliveryCompanyName: String = ""
+    @Published var deliveryAddress: String = ""
+    @Published var deliveryLoadType: String = ""
+    @Published var deliveryLoadCount: String = ""
+    @Published var deliveryTemperature: String = ""
+    @Published var deliveryHazmat: String = ""
+    @Published var deliveryNumber: String = ""
+    @Published var deliveryWeight: String = ""
+    @Published var deliveryNotes: String = ""
     
     private var currentTask: Task<Void, Never>?
     private let orderService: OrderServiceProtocol
@@ -64,6 +86,7 @@ final class OrderDetailViewModel: ObservableObject {
     }
     
     private func loadEditableFields(from order: Order) {
+        // Customer & Rate fields
         customerName = order.customerName
         loadNumber = order.loadNumber ?? ""
         billingEmail = order.billingEmail ?? ""
@@ -76,6 +99,32 @@ final class OrderDetailViewModel: ObservableObject {
         fuelSurcharge = order.fuelSurcharge != nil ? "\(Int(order.fuelSurcharge!))" : ""
         otherCharges = order.otherCharges != nil ? "\(Int(order.otherCharges!))" : ""
         notes = order.notes ?? ""
+        
+        // Pickup event fields
+        if let pickupEvent = order.orderEvents.first(where: { $0.eventType == "PICKUP" }) {
+            pickupCompanyName = pickupEvent.name
+            pickupAddress = pickupEvent.address
+            pickupLoadType = pickupEvent.loadType ?? ""
+            pickupLoadCount = pickupEvent.loadCount != nil ? "\(pickupEvent.loadCount!)" : ""
+            pickupTemperature = pickupEvent.temperatureValue != nil ? "\(Int(pickupEvent.temperatureValue!))" : ""
+            pickupHazmat = pickupEvent.hazmat ?? ""
+            pickupNumber = pickupEvent.pickupNumber ?? ""
+            pickupWeight = pickupEvent.weightValue != nil ? "\(Int(pickupEvent.weightValue!))" : ""
+            pickupNotes = pickupEvent.notes ?? ""
+        }
+        
+        // Delivery event fields
+        if let deliveryEvent = order.orderEvents.first(where: { $0.eventType == "DELIVERY" }) {
+            deliveryCompanyName = deliveryEvent.name
+            deliveryAddress = deliveryEvent.address
+            deliveryLoadType = deliveryEvent.loadType ?? ""
+            deliveryLoadCount = deliveryEvent.loadCount != nil ? "\(deliveryEvent.loadCount!)" : ""
+            deliveryTemperature = deliveryEvent.temperatureValue != nil ? "\(Int(deliveryEvent.temperatureValue!))" : ""
+            deliveryHazmat = deliveryEvent.hazmat ?? ""
+            deliveryNumber = deliveryEvent.pickupNumber ?? ""
+            deliveryWeight = deliveryEvent.weightValue != nil ? "\(Int(deliveryEvent.weightValue!))" : ""
+            deliveryNotes = deliveryEvent.notes ?? ""
+        }
     }
     
     func toggleEditMode() {
