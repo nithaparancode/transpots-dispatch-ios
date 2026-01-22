@@ -6,6 +6,7 @@ final class AuthInterceptor: RequestInterceptor {
     private let retryLimit = 3
     private var isRefreshing = false
     private var requestsToRetry: [(RetryResult) -> Void] = []
+    private let lock = NSLock()
     
     func adapt(_ urlRequest: URLRequest, for session: Session, completion: @escaping (Result<URLRequest, Error>) -> Void) {
         var urlRequest = urlRequest
@@ -37,9 +38,15 @@ final class AuthInterceptor: RequestInterceptor {
         
         print("🔄 Received \(response.statusCode) error, attempting token refresh...")
         
+        lock.lock()
         requestsToRetry.append(completion)
+        let shouldRefresh = !isRefreshing
+        if shouldRefresh {
+            isRefreshing = true
+        }
+        lock.unlock()
         
-        if !isRefreshing {
+        if shouldRefresh {
             refreshTokens()
         }
     }
@@ -48,11 +55,12 @@ final class AuthInterceptor: RequestInterceptor {
         guard let refreshToken = TokenManager.shared.refreshToken else {
             print("❌ No refresh token available, logging out...")
             completeRefresh(success: false)
-            NotificationCenter.default.post(name: .userDidLogout, object: nil)
+            DispatchQueue.main.async {
+                NotificationCenter.default.post(name: .userDidLogout, object: nil)
+            }
             return
         }
         
-        isRefreshing = true
         print("🔄 Refreshing access token...")
         
         Task {
@@ -88,16 +96,21 @@ final class AuthInterceptor: RequestInterceptor {
             } catch {
                 print("❌ Token refresh failed: \(error.localizedDescription)")
                 completeRefresh(success: false)
-                NotificationCenter.default.post(name: .userDidLogout, object: nil)
+                DispatchQueue.main.async {
+                    NotificationCenter.default.post(name: .userDidLogout, object: nil)
+                }
             }
         }
     }
     
     private func completeRefresh(success: Bool) {
+        lock.lock()
         isRefreshing = false
+        let callbacks = requestsToRetry
+        requestsToRetry.removeAll()
+        lock.unlock()
         
         let result: RetryResult = success ? .retry : .doNotRetry
-        requestsToRetry.forEach { $0(result) }
-        requestsToRetry.removeAll()
+        callbacks.forEach { $0(result) }
     }
 }

@@ -14,7 +14,7 @@ enum APIEndpoint {
     
     private var baseURL: String {
         switch self {
-        case .login, .register, .forgotPassword, .getUserByEmail:
+        case .login, .register, .forgotPassword, .getUserByEmail, .refreshToken:
             return "https://transpots.ca/oapi/v1"
         default:
             return "https://transpots.ca/osapi/v1"
