@@ -54,7 +54,7 @@ final class DriverService: DriverServiceProtocol {
         
         do {
             let endpoint = APIEndpoint.deleteDriver(driverId: driverId)
-            let _: EmptyResponse = try await networkManager.request(
+            try await networkManager.request(
                 endpoint,
                 method: .delete
             )
