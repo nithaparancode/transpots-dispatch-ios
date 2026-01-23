@@ -9,7 +9,15 @@ struct CreateTripSheet: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: theme.spacing.lg) {
-                    
+                    ExpandableView(
+                        leadingContent: {
+                            Text("Section Title")
+                                .font(.headline)
+                        },
+                        expandedContent: {
+                            Text("Expanded content here Expanded content here Expanded content here Expanded content here Expanded content here Expanded content here Expanded content here Expanded content here Expanded content here Expanded content here Expanded content here Expanded content here Expanded content here Expanded content here Expanded content here Expanded content here Expanded content here Expanded content here Expanded content here Expanded content here Expanded content here Expanded content here Expanded content here Expanded content here Expanded content here Expanded content here Expanded content here Expanded content here")
+                        }
+                    )
                 }
                 .padding(theme.spacing.md)
             }
