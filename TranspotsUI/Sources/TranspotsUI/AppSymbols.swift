@@ -96,4 +96,5 @@ public struct AppSymbols {
     public static var actionAddCircle: Image { Image(systemName: "plus.circle.fill") }
     public static var actionRemoveCircle: Image { Image(systemName: "xmark.circle.fill") }
     public static var actionCheckmark: Image { Image(systemName: "checkmark.circle.fill") }
+    public static var actionDocument: Image { Image(systemName: "doc.fill") }
 }

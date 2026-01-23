@@ -54,7 +54,7 @@ struct ProfileView: View {
     
     private func errorView(message: String) -> some View {
         VStack(spacing: theme.spacing.lg) {
-            Image(systemName: "exclamationmark.triangle.fill")
+            AppSymbols.statusError
                 .font(.system(size: 50))
                 .foregroundColor(theme.colors.error)
             
@@ -84,6 +84,7 @@ struct ProfileView: View {
             VStack(spacing: theme.spacing.lg) {
                 profileHeader(user)
                 
+                managementSection(user)
                 informationSection(user)
                 
                 logoutButton
@@ -135,6 +136,19 @@ struct ProfileView: View {
         .padding(.vertical, theme.spacing.lg)
     }
     
+    // MARK: - Management Section
+    
+    private func managementSection(_ user: User) -> some View {
+        VStack(alignment: .leading, spacing: theme.spacing.md) {
+            sectionHeader(title: "Management", icon: "briefcase.fill")
+            
+            VStack(spacing: theme.spacing.md) {
+                driversCard()
+                invoicesCard()
+            }
+        }
+    }
+    
     // MARK: - Information Section
     
     private func informationSection(_ user: User) -> some View {
@@ -145,7 +159,6 @@ struct ProfileView: View {
                 personalInfoCard()
                 companyInfoCard()
                 accountInfoCard()
-                driversCard()
             }
         }
     }
@@ -284,7 +297,7 @@ struct ProfileView: View {
                         .font(theme.fonts.headline)
                         .foregroundColor(theme.colors.text)
                     
-                    Text("View and manage drivers")
+                    Text("Manage driver fleet and assignments")
                         .font(theme.fonts.caption)
                         .foregroundColor(theme.colors.secondaryText)
                 }
@@ -303,6 +316,55 @@ struct ProfileView: View {
             )
         }
         .buttonStyle(PlainButtonStyle())
+    }
+    
+    private func invoicesCard() -> some View {
+        Button(action: {
+            // TODO: Implement invoices navigation
+        }) {
+            HStack(spacing: theme.spacing.md) {
+                AppSymbols.actionDocument
+                    .font(.system(size: 24))
+                    .foregroundColor(theme.colors.primary)
+                    .frame(width: 40)
+                
+                VStack(alignment: .leading, spacing: theme.spacing.xs) {
+                    Text("Invoices")
+                        .font(theme.fonts.headline)
+                        .foregroundColor(theme.colors.text)
+                    
+                    Text("Coming soon - Manage billing and invoices")
+                        .font(theme.fonts.caption)
+                        .foregroundColor(theme.colors.secondaryText)
+                }
+                
+                Spacer()
+                
+                VStack(spacing: theme.spacing.xs) {
+                    Text("Coming Soon")
+                        .font(.system(size: 10, weight: .medium))
+                        .foregroundColor(theme.colors.primary)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(
+                            Capsule()
+                                .fill(theme.colors.primary.opacity(0.1))
+                        )
+                    
+                    AppSymbols.navForward
+                        .font(.system(size: 16))
+                        .foregroundColor(theme.colors.secondaryText.opacity(0.5))
+                }
+            }
+            .padding(theme.spacing.lg)
+            .background(
+                RoundedRectangle(cornerRadius: theme.radius.xl)
+                    .fill(theme.colors.secondaryBackground.opacity(0.7))
+                    .shadow(color: Color.black.opacity(0.03), radius: 4, y: 1)
+            )
+        }
+        .buttonStyle(PlainButtonStyle())
+        .disabled(true)
     }
     
     private var logoutButton: some View {
