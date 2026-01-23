@@ -5,6 +5,7 @@ struct TripsView: View {
     @StateObject var viewModel: TripsViewModel
     @ObservedObject var coordinator: TripsCoordinator
     @Environment(\.theme) var theme
+    @State private var showCreateTripSheet = false
     
     var body: some View {
         NavigationStack(path: $coordinator.path) {
@@ -15,6 +16,19 @@ struct TripsView: View {
                     ToolbarItem(placement: .principal) {
                         statusSegmentedControl
                     }
+                    
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button {
+                            showCreateTripSheet = true
+                        } label: {
+                            Image(systemName: "plus")
+                                .font(.system(size: 18, weight: .semibold))
+                                .foregroundColor(theme.colors.primary)
+                        }
+                    }
+                }
+                .sheet(isPresented: $showCreateTripSheet) {
+                    CreateTripSheet()
                 }
                 .navigationDestination(for: TripsRoute.self) { route in
                     coordinator.view(for: route)

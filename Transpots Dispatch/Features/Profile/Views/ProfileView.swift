@@ -11,7 +11,9 @@ struct ProfileView: View {
                 .navigationTitle("Profile")
                 .navigationBarTitleDisplayMode(.large)
                 .onAppear {
-                    viewModel.loadUserProfile()
+                    if viewModel.state == .idle {
+                        viewModel.loadUserProfile()
+                    }
                 }
         }
     }
