@@ -55,7 +55,6 @@ final class TripsViewModel: ObservableObject {
     }
     
     func changeStatus(_ status: TripStatus) {
-        guard status != selectedStatus else { return }
         selectedStatus = status
         loadTrips()
     }
