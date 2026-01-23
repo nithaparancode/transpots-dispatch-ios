@@ -59,6 +59,28 @@ final class TripsViewModel: ObservableObject {
         loadTrips()
     }
     
+    func endTrip(_ trip: Trip) async -> Bool {
+        do {
+            try await tripService.endTrip(tripId: trip.tripId)
+            await loadTrips()
+            return true
+        } catch {
+            print("❌ Failed to end trip: \(error)")
+            return false
+        }
+    }
+    
+    func deleteTrip(_ trip: Trip) async -> Bool {
+        do {
+            try await tripService.deleteTrip(tripId: trip.tripId)
+            await loadTrips()
+            return true
+        } catch {
+            print("❌ Failed to delete trip: \(error)")
+            return false
+        }
+    }
+    
     deinit {
         currentTask?.cancel()
     }

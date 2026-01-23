@@ -27,7 +27,7 @@ struct OrderEventPair: Codable {
 struct TodayTrip: Codable, Identifiable {
     let userTripId: String
     let status: String
-    let userOrderId: String
+    let userOrderId: String?
     let firstDriverName: String
     
     var id: String { userTripId }

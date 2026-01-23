@@ -123,6 +123,25 @@ struct TripsView: View {
                         .onTapGesture {
                             coordinator.push(.tripDetail(trip: trip))
                         }
+                        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                            if viewModel.selectedStatus == .active {
+                                Button(role: .destructive) {
+                                    Task {
+                                        await viewModel.endTrip(trip)
+                                    }
+                                } label: {
+                                    Label("End Trip", systemImage: "flag.checkered")
+                                }
+                            } else {
+                                Button(role: .destructive) {
+                                    Task {
+                                        await viewModel.deleteTrip(trip)
+                                    }
+                                } label: {
+                                    Label("Delete", systemImage: "trash")
+                                }
+                            }
+                        }
                 }
             }
             .padding(theme.spacing.md)

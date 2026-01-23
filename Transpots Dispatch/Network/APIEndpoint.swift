@@ -16,6 +16,8 @@ enum APIEndpoint {
     case createDriver
     case deleteDriver(driverId: String)
     case createTrip
+    case endTrip(tripId: Int)
+    case deleteTrip(tripId: Int)
     
     private var baseURL: String {
         switch self {
@@ -56,6 +58,10 @@ enum APIEndpoint {
             return "/driver/\(driverId)"
         case .createTrip:
             return "/trips"
+        case .endTrip(let tripId):
+            return "/trips/\(tripId)/end"
+        case .deleteTrip(let tripId):
+            return "/trips/\(tripId)"
         }
     }
     

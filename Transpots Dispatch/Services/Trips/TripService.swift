@@ -4,6 +4,8 @@ import Alamofire
 protocol TripServiceProtocol: Service {
     func fetchTrips(status: String, page: Int, size: Int) async throws -> TripResponse
     func createTrip(request: CreateTripRequest) async throws -> Trip
+    func endTrip(tripId: Int) async throws
+    func deleteTrip(tripId: Int) async throws
 }
 
 final class TripService: TripServiceProtocol {
@@ -36,6 +38,36 @@ final class TripService: TripServiceProtocol {
             return trip
         } catch {
             print("❌ Create trip API error: \(error)")
+            throw error
+        }
+    }
+    
+    func endTrip(tripId: Int) async throws {
+        print("🏁 Ending trip: \(tripId)")
+        
+        do {
+            try await networkManager.request(
+                .endTrip(tripId: tripId),
+                method: .post
+            )
+            print("✅ Trip ended successfully")
+        } catch {
+            print("❌ End trip error: \(error)")
+            throw error
+        }
+    }
+    
+    func deleteTrip(tripId: Int) async throws {
+        print("🗑️ Deleting trip: \(tripId)")
+        
+        do {
+            try await networkManager.request(
+                .deleteTrip(tripId: tripId),
+                method: .delete
+            )
+            print("✅ Trip deleted successfully")
+        } catch {
+            print("❌ Delete trip error: \(error)")
             throw error
         }
     }
