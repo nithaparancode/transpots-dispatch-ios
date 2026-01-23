@@ -3,10 +3,16 @@ import TranspotsUI
 
 struct ProfileView: View {
     @StateObject var viewModel: ProfileViewModel
+    @ObservedObject var coordinator: ProfileCoordinator
     @Environment(\.theme) var theme
     
+    init(viewModel: ProfileViewModel = ProfileViewModel(), coordinator: ProfileCoordinator = ProfileCoordinator()) {
+        self._viewModel = StateObject(wrappedValue: viewModel)
+        self._coordinator = ObservedObject(wrappedValue: coordinator)
+    }
+    
     var body: some View {
-        NavigationView {
+        NavigationStack(path: $coordinator.path) {
             contentView
                 .navigationTitle("Profile")
                 .navigationBarTitleDisplayMode(.large)
@@ -14,6 +20,9 @@ struct ProfileView: View {
                     if viewModel.state == .idle {
                         viewModel.loadUserProfile()
                     }
+                }
+                .navigationDestination(for: ProfileRoute.self) { route in
+                    coordinator.view(for: route)
                 }
         }
     }
@@ -75,11 +84,7 @@ struct ProfileView: View {
             VStack(spacing: theme.spacing.lg) {
                 profileHeader(user)
                 
-                userInfoSection(user)
-                
-                companyInfoSection(user)
-                
-                accountInfoSection(user)
+                informationSection(user)
                 
                 logoutButton
             }
@@ -130,125 +135,185 @@ struct ProfileView: View {
         .padding(.vertical, theme.spacing.lg)
     }
     
-    private func userInfoSection(_ user: User) -> some View {
+    // MARK: - Information Section
+    
+    private func informationSection(_ user: User) -> some View {
         VStack(alignment: .leading, spacing: theme.spacing.md) {
-            sectionHeader(title: "Personal Information", icon: "person.fill")
+            sectionHeader(title: "Information", icon: "info.circle.fill")
             
-            sectionCard {
-                VStack(spacing: theme.spacing.lg) {
-                    ReadOnlyFormField(
-                        label: "First Name",
-                        value: user.firstName ?? "",
-                        icon: "person.fill"
-                    )
-                    
-                    ReadOnlyFormField(
-                        label: "Last Name",
-                        value: user.lastName ?? "",
-                        icon: "person.fill"
-                    )
-                    
-                    ReadOnlyFormField(
-                        label: "Email Address",
-                        value: user.email,
-                        icon: "envelope.fill"
-                    )
-                    
-                    if let phone = user.phoneNumber {
-                        ReadOnlyFormField(
-                            label: "Phone Number",
-                            value: phone,
-                            icon: "phone.fill"
-                        )
-                    }
-                }
+            VStack(spacing: theme.spacing.md) {
+                personalInfoCard()
+                companyInfoCard()
+                accountInfoCard()
+                driversCard()
             }
         }
     }
     
-    private func companyInfoSection(_ user: User) -> some View {
-        VStack(alignment: .leading, spacing: theme.spacing.md) {
-            sectionHeader(title: "Company Information", icon: "building.2.fill")
-            
-            sectionCard {
-                VStack(spacing: theme.spacing.lg) {
-                    ReadOnlyFormField(
-                        label: "Company Name",
-                        value: user.companyName ?? "",
-                        icon: "building.2"
-                    )
-                    
-                    ReadOnlyFormField(
-                        label: "Company ID",
-                        value: user.companyId != nil ? "\(user.companyId!)" : "",
-                        icon: "number"
-                    )
-                }
-            }
+    private func sectionHeader(title: String, icon: String) -> some View {
+        HStack(spacing: theme.spacing.xs) {
+            Image(systemName: icon)
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundColor(theme.colors.primary)
+            Text(title)
+                .font(.system(size: 18, weight: .bold))
+                .foregroundColor(theme.colors.text)
         }
     }
     
-    private func accountInfoSection(_ user: User) -> some View {
-        VStack(alignment: .leading, spacing: theme.spacing.md) {
-            sectionHeader(title: "Account Information", icon: "info.circle.fill")
-            
-            sectionCard {
-                VStack(spacing: theme.spacing.lg) {
-                    ReadOnlyFormField(
-                        label: "User ID",
-                        value: user.id,
-                        icon: "number.circle"
-                    )
+    private func personalInfoCard() -> some View {
+        Button(action: {
+            coordinator.push(.personalInfo)
+        }) {
+            HStack(spacing: theme.spacing.md) {
+                AppSymbols.profileUser
+                    .font(.system(size: 24))
+                    .foregroundColor(theme.colors.primary)
+                    .frame(width: 40)
+                
+                VStack(alignment: .leading, spacing: theme.spacing.xs) {
+                    Text("Personal Information")
+                        .font(theme.fonts.headline)
+                        .foregroundColor(theme.colors.text)
                     
-                    if let status = user.status {
-                        HStack {
-                            VStack(alignment: .leading, spacing: 8) {
-                                HStack(spacing: 6) {
-                                    Image(systemName: "checkmark.circle.fill")
-                                        .font(.system(size: 12, weight: .semibold))
-                                        .foregroundColor(theme.colors.primary)
-                                    Text("Account Status")
-                                        .font(.system(size: 13, weight: .semibold))
-                                        .foregroundColor(theme.colors.secondaryText)
-                                        .textCase(.uppercase)
-                                        .tracking(0.5)
-                                }
-                                
-                                Text(status.capitalized)
-                                    .font(.system(size: 16, weight: .semibold))
-                                    .foregroundColor(status.lowercased() == "active" ? theme.colors.success : theme.colors.secondaryText)
-                                    .padding(.horizontal, 12)
-                                    .padding(.vertical, 8)
-                                    .background(
-                                        RoundedRectangle(cornerRadius: theme.radius.lg)
-                                            .fill(status.lowercased() == "active" ? theme.colors.success.opacity(0.1) : theme.colors.secondaryBackground)
-                                    )
-                            }
-                            Spacer()
-                        }
-                    }
-                    
-                    if let createdAt = user.createdAt {
-                        ReadOnlyFormField(
-                            label: "Member Since",
-                            value: formatDate(createdAt),
-                            icon: "calendar"
-                        )
-                    }
+                    Text("Name, email, phone number")
+                        .font(theme.fonts.caption)
+                        .foregroundColor(theme.colors.secondaryText)
                 }
+                
+                Spacer()
+                
+                AppSymbols.navForward
+                    .font(.system(size: 16))
+                    .foregroundColor(theme.colors.secondaryText)
             }
+            .padding(theme.spacing.lg)
+            .background(
+                RoundedRectangle(cornerRadius: theme.radius.xl)
+                    .fill(theme.colors.secondaryBackground)
+                    .shadow(color: Color.black.opacity(0.05), radius: 8, y: 2)
+            )
         }
+        .buttonStyle(PlainButtonStyle())
+    }
+    
+    private func companyInfoCard() -> some View {
+        Button(action: {
+            coordinator.push(.companyInfo)
+        }) {
+            HStack(spacing: theme.spacing.md) {
+                AppSymbols.profileSettings
+                    .font(.system(size: 24))
+                    .foregroundColor(theme.colors.primary)
+                    .frame(width: 40)
+                
+                VStack(alignment: .leading, spacing: theme.spacing.xs) {
+                    Text("Company Information")
+                        .font(theme.fonts.headline)
+                        .foregroundColor(theme.colors.text)
+                    
+                    Text("Company name and ID")
+                        .font(theme.fonts.caption)
+                        .foregroundColor(theme.colors.secondaryText)
+                }
+                
+                Spacer()
+                
+                AppSymbols.navForward
+                    .font(.system(size: 16))
+                    .foregroundColor(theme.colors.secondaryText)
+            }
+            .padding(theme.spacing.lg)
+            .background(
+                RoundedRectangle(cornerRadius: theme.radius.xl)
+                    .fill(theme.colors.secondaryBackground)
+                    .shadow(color: Color.black.opacity(0.05), radius: 8, y: 2)
+            )
+        }
+        .buttonStyle(PlainButtonStyle())
+    }
+    
+    private func accountInfoCard() -> some View {
+        Button(action: {
+            coordinator.push(.accountInfo)
+        }) {
+            HStack(spacing: theme.spacing.md) {
+                AppSymbols.statusInfo
+                    .font(.system(size: 24))
+                    .foregroundColor(theme.colors.primary)
+                    .frame(width: 40)
+                
+                VStack(alignment: .leading, spacing: theme.spacing.xs) {
+                    Text("Account Information")
+                        .font(theme.fonts.headline)
+                        .foregroundColor(theme.colors.text)
+                    
+                    Text("User ID, status, member since")
+                        .font(theme.fonts.caption)
+                        .foregroundColor(theme.colors.secondaryText)
+                }
+                
+                Spacer()
+                
+                AppSymbols.navForward
+                    .font(.system(size: 16))
+                    .foregroundColor(theme.colors.secondaryText)
+            }
+            .padding(theme.spacing.lg)
+            .background(
+                RoundedRectangle(cornerRadius: theme.radius.xl)
+                    .fill(theme.colors.secondaryBackground)
+                    .shadow(color: Color.black.opacity(0.05), radius: 8, y: 2)
+            )
+        }
+        .buttonStyle(PlainButtonStyle())
+    }
+    
+    private func driversCard() -> some View {
+        Button(action: {
+            coordinator.push(.drivers)
+        }) {
+            HStack(spacing: theme.spacing.md) {
+                AppSymbols.tripDriver
+                    .font(.system(size: 24))
+                    .foregroundColor(theme.colors.primary)
+                    .frame(width: 40)
+                
+                VStack(alignment: .leading, spacing: theme.spacing.xs) {
+                    Text("Drivers")
+                        .font(theme.fonts.headline)
+                        .foregroundColor(theme.colors.text)
+                    
+                    Text("View and manage drivers")
+                        .font(theme.fonts.caption)
+                        .foregroundColor(theme.colors.secondaryText)
+                }
+                
+                Spacer()
+                
+                AppSymbols.navForward
+                    .font(.system(size: 16))
+                    .foregroundColor(theme.colors.secondaryText)
+            }
+            .padding(theme.spacing.lg)
+            .background(
+                RoundedRectangle(cornerRadius: theme.radius.xl)
+                    .fill(theme.colors.secondaryBackground)
+                    .shadow(color: Color.black.opacity(0.05), radius: 8, y: 2)
+            )
+        }
+        .buttonStyle(PlainButtonStyle())
     }
     
     private var logoutButton: some View {
         Button(action: {
             viewModel.logout()
         }) {
-            HStack(spacing: 12) {
-                Image(systemName: "arrow.right.square")
+            HStack(spacing: theme.spacing.sm) {
+                AppSymbols.profileLogout
                     .font(.system(size: 18, weight: .semibold))
                 Text("Logout")
-                    .font(.system(size: 17, weight: .semibold))
+                    .font(theme.fonts.headline)
             }
             .foregroundColor(theme.colors.error)
             .frame(maxWidth: .infinity)
@@ -261,28 +326,6 @@ struct ProfileView: View {
             )
         }
         .padding(.top, theme.spacing.lg)
-    }
-    
-    private func sectionHeader(title: String, icon: String) -> some View {
-        HStack(spacing: 8) {
-            Image(systemName: icon)
-                .font(.system(size: 16, weight: .semibold))
-                .foregroundColor(theme.colors.primary)
-            Text(title)
-                .font(.system(size: 18, weight: .bold))
-                .foregroundColor(theme.colors.text)
-        }
-    }
-    
-    @ViewBuilder
-    private func sectionCard<Content: View>(@ViewBuilder content: () -> Content) -> some View {
-        content()
-            .padding(theme.spacing.lg)
-            .background(
-                RoundedRectangle(cornerRadius: theme.radius.xl)
-                    .fill(theme.colors.secondaryBackground)
-                    .shadow(color: Color.black.opacity(0.05), radius: 8, y: 2)
-            )
     }
     
     private func formatDate(_ dateString: String) -> String {
