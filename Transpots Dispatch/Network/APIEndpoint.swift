@@ -11,10 +11,13 @@ enum APIEndpoint {
     case getOrderDetail(orderId: Int)
     case updateOrder(orderId: Int)
     case fetchTrips(status: String, page: Int, size: Int, sortBy: String)
+    case fetchEquipments
+    case fetchDrivers(userId: String)
+    case createTrip
     
     private var baseURL: String {
         switch self {
-        case .login, .register, .forgotPassword, .getUserByEmail, .refreshToken:
+        case .login, .register, .forgotPassword, .getUserByEmail, .refreshToken, .fetchDrivers:
             return "https://transpots.ca/oapi/v1"
         default:
             return "https://transpots.ca/osapi/v1"
@@ -41,6 +44,12 @@ enum APIEndpoint {
             return "/orders/\(orderId)"
         case .fetchTrips(let status, let page, let size, let sortBy):
             return "/trips?size=\(size)&page=\(page)&sortBy=\(sortBy)&status=\(status)"
+        case .fetchEquipments:
+            return "/equipments"
+        case .fetchDrivers(let userId):
+            return "/drivers?userId=\(userId)"
+        case .createTrip:
+            return "/trips"
         }
     }
     

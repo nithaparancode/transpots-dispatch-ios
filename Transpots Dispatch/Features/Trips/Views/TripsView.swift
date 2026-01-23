@@ -27,7 +27,9 @@ struct TripsView: View {
                         }
                     }
                 }
-                .sheet(isPresented: $showCreateTripSheet) {
+                .sheet(isPresented: $showCreateTripSheet, onDismiss: {
+                    viewModel.loadTrips()
+                }) {
                     CreateTripSheet()
                 }
                 .navigationDestination(for: TripsRoute.self) { route in

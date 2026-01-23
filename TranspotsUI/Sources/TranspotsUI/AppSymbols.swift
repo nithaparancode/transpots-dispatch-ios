@@ -77,4 +77,23 @@ public struct AppSymbols {
     public static var mediaCamera: Image { Image(systemName: "camera.fill") }
     public static var mediaPhoto: Image { Image(systemName: "photo.fill") }
     public static var mediaVideo: Image { Image(systemName: "video.fill") }
+    
+    // MARK: - Trips
+    public static var tripTasks: Image { Image(systemName: "list.bullet.clipboard") }
+    public static var tripDriver: Image { Image(systemName: "person.circle.fill") }
+    public static var tripPickup: Image { Image(systemName: "arrow.up.circle.fill") }
+    public static var tripDelivery: Image { Image(systemName: "arrow.down.circle.fill") }
+    public static var tripTruck: Image { Image(systemName: "truck.box") }
+    public static var tripTrailer: Image { Image(systemName: "trailer") }
+    
+    // MARK: - Chevrons
+    public static var chevronDown: Image { Image(systemName: "chevron.down") }
+    public static var chevronUp: Image { Image(systemName: "chevron.up") }
+    public static var chevronRight: Image { Image(systemName: "chevron.right") }
+    public static var chevronLeft: Image { Image(systemName: "chevron.left") }
+    
+    // MARK: - Actions Extended
+    public static var actionAddCircle: Image { Image(systemName: "plus.circle.fill") }
+    public static var actionRemoveCircle: Image { Image(systemName: "xmark.circle.fill") }
+    public static var actionCheckmark: Image { Image(systemName: "checkmark.circle.fill") }
 }
