@@ -116,36 +116,38 @@ struct TripsView: View {
     }
     
     private func tripsList(_ trips: [Trip]) -> some View {
-        ScrollView {
-            LazyVStack(spacing: theme.spacing.md) {
-                ForEach(trips) { trip in
-                    TripCard(trip: trip)
-                        .onTapGesture {
-                            coordinator.push(.tripDetail(trip: trip))
-                        }
-                        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                            if viewModel.selectedStatus == .active {
-                                Button(role: .destructive) {
-                                    Task {
-                                        await viewModel.endTrip(trip)
-                                    }
-                                } label: {
-                                    Label("End Trip", systemImage: "flag.checkered")
+        List {
+            ForEach(trips) { trip in
+                TripCard(trip: trip)
+                    .listRowInsets(EdgeInsets(top: theme.spacing.sm, leading: theme.spacing.md, bottom: theme.spacing.sm, trailing: theme.spacing.md))
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
+                    .onTapGesture {
+                        coordinator.push(.tripDetail(trip: trip))
+                    }
+                    .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                        if viewModel.selectedStatus == .active {
+                            Button(role: .destructive) {
+                                Task {
+                                    await viewModel.endTrip(trip)
                                 }
-                            } else {
-                                Button(role: .destructive) {
-                                    Task {
-                                        await viewModel.deleteTrip(trip)
-                                    }
-                                } label: {
-                                    Label("Delete", systemImage: "trash")
+                            } label: {
+                                Label("End Trip", systemImage: "flag.checkered")
+                            }
+                        } else {
+                            Button(role: .destructive) {
+                                Task {
+                                    await viewModel.deleteTrip(trip)
                                 }
+                            } label: {
+                                Label("Delete", systemImage: "trash")
                             }
                         }
-                }
+                    }
             }
-            .padding(theme.spacing.md)
         }
+        .listStyle(.plain)
+        .scrollContentBackground(.hidden)
     }
     
     private var statusSegmentedControl: some View {
