@@ -1,9 +1,32 @@
 import Foundation
 
-struct Driver: Codable, Identifiable, Equatable {
-    let id: String
+struct DriverResponse: Codable {
+    let data: [Driver]
+}
+
+struct EmptyResponse: Codable {
+    // Empty response for delete operations
+}
+
+struct CreateDriverRequest: Codable {
     let firstName: String
     let lastName: String
+    let phone: String
+    let owner: CreateDriverOwner
+}
+
+struct CreateDriverOwner: Codable {
+    let id: String
+    let companyAddress: String
+    let companyName: String
+    let email: String
+    let password: String
+}
+
+struct Driver: Codable, Identifiable, Equatable {
+    let id: String
+    let firstName: String?
+    let lastName: String?
     let phone: String
     let address: String?
     let licenseNumber: String?
@@ -26,11 +49,14 @@ struct Driver: Codable, Identifiable, Equatable {
     let driverAppStatus: String?
     
     var fullName: String {
-        "\(firstName)\(lastName)"
+        let first = firstName ?? ""
+        let last = lastName ?? ""
+        return "\(first)\(last)"
     }
     
     var displayName: String {
-        fullName.trimmingCharacters(in: .whitespaces)
+        let name = fullName.trimmingCharacters(in: .whitespaces)
+        return name.isEmpty ? phone : name
     }
 }
 

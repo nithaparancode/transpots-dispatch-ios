@@ -4,12 +4,27 @@ import TranspotsUI
 struct DriversView: View {
     @StateObject private var viewModel = DriversViewModel()
     @Environment(\.theme) var theme
+    @State private var driverToDelete: Driver?
+    @State private var showDeleteConfirmation = false
+    @State private var showCreateDriverSheet = false
+    @State private var phoneNumber = ""
+    @State private var isCreating = false
     
     var body: some View {
         contentView
             .navigationTitle("Drivers")
             .navigationBarTitleDisplayMode(.inline)
             .navigationBarBackButtonHidden(false)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button {
+                        showCreateDriverSheet = true
+                    } label: {
+                        Image(systemName: "plus")
+                            .foregroundColor(theme.colors.primary)
+                    }
+                }
+            }
             .onAppear {
                 if viewModel.state == .idle {
                     viewModel.loadDrivers()
@@ -17,6 +32,19 @@ struct DriversView: View {
             }
             .refreshable {
                 viewModel.loadDrivers()
+            }
+            .sheet(isPresented: $showCreateDriverSheet) {
+                createDriverSheet
+            }
+            .alert("Delete Driver", isPresented: $showDeleteConfirmation, presenting: driverToDelete) { driver in
+                Button("Cancel", role: .cancel) {
+                    driverToDelete = nil
+                }
+                Button("Delete", role: .destructive) {
+                    deleteDriver(driver)
+                }
+            } message: { driver in
+                Text("Are you sure you want to delete \(driver.displayName)? This action cannot be undone.")
             }
     }
     
@@ -74,18 +102,29 @@ struct DriversView: View {
     }
     
     private func driversList(drivers: [Driver]) -> some View {
-        ScrollView {
-            VStack(spacing: theme.spacing.md) {
-                if drivers.isEmpty {
-                    emptyStateView
-                } else {
-                    ForEach(drivers) { driver in
-                        driverCard(driver)
-                    }
+        List {
+            if drivers.isEmpty {
+                emptyStateView
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
+            } else {
+                ForEach(drivers) { driver in
+                    driverCard(driver)
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
+                        .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
+                        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                            Button(role: .destructive) {
+                                driverToDelete = driver
+                                showDeleteConfirmation = true
+                            } label: {
+                                Label("Delete", systemImage: "trash")
+                            }
+                        }
                 }
             }
-            .padding(theme.spacing.lg)
         }
+        .listStyle(.plain)
         .background(theme.colors.background)
     }
     
@@ -197,6 +236,99 @@ struct DriversView: View {
                 .fill(theme.colors.secondaryBackground)
                 .shadow(color: Color.black.opacity(0.05), radius: 8, y: 2)
         )
+    }
+    
+    // MARK: - Create Driver Sheet
+    
+    private var createDriverSheet: some View {
+        NavigationView {
+            VStack(spacing: theme.spacing.xl) {
+                VStack(alignment: .leading, spacing: theme.spacing.sm) {
+                    Text("Phone Number")
+                        .font(theme.fonts.headline)
+                        .foregroundColor(theme.colors.text)
+                    
+                    TextField("Enter phone number", text: $phoneNumber)
+                        .keyboardType(.phonePad)
+                        .textFieldStyle(.plain)
+                        .padding(theme.spacing.md)
+                        .background(
+                            RoundedRectangle(cornerRadius: theme.radius.md)
+                                .fill(theme.colors.secondaryBackground)
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: theme.radius.md)
+                                .stroke(theme.colors.primary.opacity(0.3), lineWidth: 1)
+                        )
+                }
+                .padding(.horizontal, theme.spacing.lg)
+                .padding(.top, theme.spacing.xl)
+                
+                Spacer()
+                
+                Button {
+                    createDriver()
+                } label: {
+                    if isCreating {
+                        ProgressView()
+                            .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 50)
+                    } else {
+                        Text("Create")
+                            .font(theme.fonts.headline)
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 50)
+                    }
+                }
+                .background(phoneNumber.isEmpty ? theme.colors.secondaryText : theme.colors.primary)
+                .cornerRadius(theme.radius.md)
+                .padding(.horizontal, theme.spacing.lg)
+                .padding(.bottom, theme.spacing.xl)
+                .disabled(phoneNumber.isEmpty || isCreating)
+            }
+            .background(theme.colors.background)
+            .navigationTitle("Add Driver")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Cancel") {
+                        showCreateDriverSheet = false
+                        phoneNumber = ""
+                    }
+                    .foregroundColor(theme.colors.primary)
+                }
+            }
+        }
+    }
+    
+    // MARK: - Helper Methods
+    
+    private func createDriver() {
+        isCreating = true
+        
+        Task {
+            let success = await viewModel.createDriver(phoneNumber: phoneNumber)
+            
+            await MainActor.run {
+                isCreating = false
+                
+                if success {
+                    showCreateDriverSheet = false
+                    phoneNumber = ""
+                }
+            }
+        }
+    }
+    
+    private func deleteDriver(_ driver: Driver) {
+        Task {
+            let success = await viewModel.deleteDriver(driver)
+            if success {
+                driverToDelete = nil
+            }
+        }
     }
 }
 
