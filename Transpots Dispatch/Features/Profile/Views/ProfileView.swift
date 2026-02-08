@@ -4,6 +4,8 @@ import TranspotsUI
 struct ProfileView: View {
     @StateObject var viewModel: ProfileViewModel
     @ObservedObject var coordinator: ProfileCoordinator
+    @ObservedObject private var appearanceManager = AppearanceManager.shared
+    @ObservedObject private var languageManager = LanguageManager.shared
     @Environment(\.theme) var theme
     
     init(viewModel: ProfileViewModel = ProfileViewModel(), coordinator: ProfileCoordinator = ProfileCoordinator()) {
@@ -14,7 +16,7 @@ struct ProfileView: View {
     var body: some View {
         NavigationStack(path: $coordinator.path) {
             contentView
-                .navigationTitle("Profile")
+                .navigationTitle("Settings")
                 .navigationBarTitleDisplayMode(.large)
                 .onAppear {
                     if viewModel.state == .idle {
@@ -23,6 +25,14 @@ struct ProfileView: View {
                 }
                 .navigationDestination(for: ProfileRoute.self) { route in
                     coordinator.view(for: route)
+                }
+                .alert("Delete Account", isPresented: $viewModel.showDeleteConfirmation) {
+                    Button("Cancel", role: .cancel) {}
+                    Button("Delete", role: .destructive) {
+                        viewModel.deleteAccount()
+                    }
+                } message: {
+                    Text("Are you sure you want to delete your account? This action cannot be undone.")
                 }
         }
     }
@@ -79,208 +89,109 @@ struct ProfileView: View {
         }
     }
     
+    // MARK: - Main Content
+    
     private func profileContent(_ user: User) -> some View {
         ScrollView {
             VStack(spacing: theme.spacing.lg) {
-                profileHeader(user)
-                
-                managementSection(user)
-                informationSection(user)
-                
-                logoutButton
-            }
-            .padding(theme.spacing.lg)
-        }
-        .background(theme.colors.background)
-    }
-    
-    private func profileHeader(_ user: User) -> some View {
-        VStack(spacing: theme.spacing.md) {
-            ZStack {
-                Circle()
-                    .fill(
-                        LinearGradient(
-                            colors: [theme.colors.primary, theme.colors.primary.opacity(0.7)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .frame(width: 100, height: 100)
-                    .shadow(color: theme.colors.primary.opacity(0.3), radius: 12, y: 4)
-                
-                Text(user.fullName.prefix(1).uppercased())
-                    .font(.system(size: 40, weight: .bold))
-                    .foregroundColor(.white)
-            }
-            
-            Text(user.fullName)
-                .font(.system(size: 24, weight: .bold))
-                .foregroundColor(theme.colors.text)
-            
-            Text(user.email)
-                .font(.system(size: 15))
-                .foregroundColor(theme.colors.secondaryText)
-            
-            if let role = user.role {
-                Text(role.capitalized)
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 6)
-                    .background(
-                        Capsule()
-                            .fill(theme.colors.primary)
-                    )
-            }
-        }
-        .padding(.vertical, theme.spacing.lg)
-    }
-    
-    // MARK: - Management Section
-    
-    private func managementSection(_ user: User) -> some View {
-        VStack(alignment: .leading, spacing: theme.spacing.md) {
-            sectionHeader(title: "Management", icon: "briefcase.fill")
-            
-            VStack(spacing: theme.spacing.md) {
                 driversCard()
-                invoicesCard()
+                appearanceSection
+                languageSection
+                logoutButton
+                deleteAccountButton
+                appInformationSection
             }
+            .padding(theme.spacing.md)
         }
+        .background(theme.colors.secondaryBackground)
     }
     
-    // MARK: - Information Section
+    // MARK: - Appearance Section
     
-    private func informationSection(_ user: User) -> some View {
+    private var appearanceSection: some View {
         VStack(alignment: .leading, spacing: theme.spacing.md) {
-            sectionHeader(title: "Information", icon: "info.circle.fill")
+            sectionHeader(title: "Appearance")
             
-            VStack(spacing: theme.spacing.md) {
-                personalInfoCard()
-                companyInfoCard()
-                accountInfoCard()
-            }
-        }
-    }
-    
-    private func sectionHeader(title: String, icon: String) -> some View {
-        HStack(spacing: theme.spacing.xs) {
-            Image(systemName: icon)
-                .font(.system(size: 16, weight: .semibold))
-                .foregroundColor(theme.colors.primary)
-            Text(title)
-                .font(.system(size: 18, weight: .bold))
-                .foregroundColor(theme.colors.text)
-        }
-    }
-    
-    private func personalInfoCard() -> some View {
-        Button(action: {
-            coordinator.push(.personalInfo)
-        }) {
-            HStack(spacing: theme.spacing.md) {
-                AppSymbols.profileUser
-                    .font(.system(size: 24))
-                    .foregroundColor(theme.colors.primary)
-                    .frame(width: 40)
-                
-                VStack(alignment: .leading, spacing: theme.spacing.xs) {
-                    Text("Personal Information")
-                        .font(theme.fonts.headline)
+            VStack(alignment: .leading, spacing: theme.spacing.md) {
+                HStack(spacing: theme.spacing.xs) {
+                    Image(systemName: "paintbrush.fill")
+                        .font(.system(size: 14))
+                        .foregroundColor(theme.colors.primary)
+                    Text("Theme")
+                        .font(theme.fonts.subheadline)
+                        .fontWeight(.semibold)
                         .foregroundColor(theme.colors.text)
-                    
-                    Text("Name, email, phone number")
-                        .font(theme.fonts.caption)
-                        .foregroundColor(theme.colors.secondaryText)
                 }
                 
-                Spacer()
-                
-                AppSymbols.navForward
-                    .font(.system(size: 16))
-                    .foregroundColor(theme.colors.secondaryText)
+                HStack(spacing: theme.spacing.sm) {
+                    ForEach(AppearanceManager.AppearanceMode.allCases, id: \.self) { mode in
+                        SelectableCardView(
+                            title: mode.displayName,
+                            icon: mode.icon,
+                            isSelected: appearanceManager.selectedMode == mode
+                        ) {
+                            appearanceManager.selectedMode = mode
+                        }
+                    }
+                }
             }
-            .padding(theme.spacing.lg)
+            .padding(theme.spacing.md)
             .background(
                 RoundedRectangle(cornerRadius: theme.radius.xl)
-                    .fill(theme.colors.secondaryBackground)
-                    .shadow(color: Color.black.opacity(0.05), radius: 8, y: 2)
+                    .fill(theme.colors.background)
             )
         }
-        .buttonStyle(PlainButtonStyle())
     }
     
-    private func companyInfoCard() -> some View {
-        Button(action: {
-            coordinator.push(.companyInfo)
-        }) {
-            HStack(spacing: theme.spacing.md) {
-                AppSymbols.profileSettings
-                    .font(.system(size: 24))
-                    .foregroundColor(theme.colors.primary)
-                    .frame(width: 40)
-                
-                VStack(alignment: .leading, spacing: theme.spacing.xs) {
-                    Text("Company Information")
-                        .font(theme.fonts.headline)
+    // MARK: - Language Section
+    
+    private var languageSection: some View {
+        VStack(alignment: .leading, spacing: theme.spacing.md) {
+            sectionHeader(title: "Language")
+            
+            VStack(alignment: .leading, spacing: theme.spacing.md) {
+                HStack(spacing: theme.spacing.xs) {
+                    Image(systemName: "globe")
+                        .font(.system(size: 14))
+                        .foregroundColor(theme.colors.primary)
+                    Text("App Language")
+                        .font(theme.fonts.subheadline)
+                        .fontWeight(.semibold)
                         .foregroundColor(theme.colors.text)
-                    
-                    Text("Company name and ID")
-                        .font(theme.fonts.caption)
-                        .foregroundColor(theme.colors.secondaryText)
                 }
                 
-                Spacer()
+                let columns = Array(repeating: GridItem(.flexible(), spacing: theme.spacing.sm), count: 3)
                 
-                AppSymbols.navForward
-                    .font(.system(size: 16))
-                    .foregroundColor(theme.colors.secondaryText)
+                LazyVGrid(columns: columns, spacing: theme.spacing.sm) {
+                    ForEach(LanguageManager.SupportedLanguage.allCases, id: \.self) { language in
+                        SelectableCardView(
+                            title: language.displayName,
+                            isSelected: languageManager.selectedLanguage == language
+                        ) {
+                            languageManager.selectedLanguage = language
+                        }
+                    }
+                }
             }
-            .padding(theme.spacing.lg)
+            .padding(theme.spacing.md)
             .background(
                 RoundedRectangle(cornerRadius: theme.radius.xl)
-                    .fill(theme.colors.secondaryBackground)
-                    .shadow(color: Color.black.opacity(0.05), radius: 8, y: 2)
+                    .fill(theme.colors.background)
             )
         }
-        .buttonStyle(PlainButtonStyle())
     }
     
-    private func accountInfoCard() -> some View {
-        Button(action: {
-            coordinator.push(.accountInfo)
-        }) {
-            HStack(spacing: theme.spacing.md) {
-                AppSymbols.statusInfo
-                    .font(.system(size: 24))
-                    .foregroundColor(theme.colors.primary)
-                    .frame(width: 40)
-                
-                VStack(alignment: .leading, spacing: theme.spacing.xs) {
-                    Text("Account Information")
-                        .font(theme.fonts.headline)
-                        .foregroundColor(theme.colors.text)
-                    
-                    Text("User ID, status, member since")
-                        .font(theme.fonts.caption)
-                        .foregroundColor(theme.colors.secondaryText)
-                }
-                
-                Spacer()
-                
-                AppSymbols.navForward
-                    .font(.system(size: 16))
-                    .foregroundColor(theme.colors.secondaryText)
-            }
-            .padding(theme.spacing.lg)
-            .background(
-                RoundedRectangle(cornerRadius: theme.radius.xl)
-                    .fill(theme.colors.secondaryBackground)
-                    .shadow(color: Color.black.opacity(0.05), radius: 8, y: 2)
-            )
-        }
-        .buttonStyle(PlainButtonStyle())
+    // MARK: - Section Header
+    
+    private func sectionHeader(title: String) -> some View {
+        Text(title)
+            .font(theme.fonts.footnote)
+            .fontWeight(.semibold)
+            .foregroundColor(theme.colors.primary)
+            .textCase(.uppercase)
     }
+    
+    // MARK: - Drivers Card
     
     private func driversCard() -> some View {
         Button(action: {
@@ -311,61 +222,77 @@ struct ProfileView: View {
             .padding(theme.spacing.lg)
             .background(
                 RoundedRectangle(cornerRadius: theme.radius.xl)
-                    .fill(theme.colors.secondaryBackground)
-                    .shadow(color: Color.black.opacity(0.05), radius: 8, y: 2)
+                    .fill(theme.colors.background)
             )
         }
         .buttonStyle(PlainButtonStyle())
     }
     
-    private func invoicesCard() -> some View {
+    // MARK: - Delete Account
+    
+    private var deleteAccountButton: some View {
         Button(action: {
-            // TODO: Implement invoices navigation
+            viewModel.showDeleteConfirmation = true
         }) {
-            HStack(spacing: theme.spacing.md) {
-                AppSymbols.actionDocument
-                    .font(.system(size: 24))
-                    .foregroundColor(theme.colors.primary)
-                    .frame(width: 40)
-                
-                VStack(alignment: .leading, spacing: theme.spacing.xs) {
-                    Text("Invoices")
-                        .font(theme.fonts.headline)
-                        .foregroundColor(theme.colors.text)
-                    
-                    Text("Coming soon - Manage billing and invoices")
-                        .font(theme.fonts.caption)
-                        .foregroundColor(theme.colors.secondaryText)
-                }
-                
-                Spacer()
-                
-                VStack(spacing: theme.spacing.xs) {
-                    Text("Coming Soon")
-                        .font(.system(size: 10, weight: .medium))
-                        .foregroundColor(theme.colors.primary)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
-                        .background(
-                            Capsule()
-                                .fill(theme.colors.primary.opacity(0.1))
-                        )
-                    
-                    AppSymbols.navForward
-                        .font(.system(size: 16))
-                        .foregroundColor(theme.colors.secondaryText.opacity(0.5))
-                }
+            HStack(spacing: theme.spacing.sm) {
+                Image(systemName: "trash")
+                    .font(.system(size: 16, weight: .semibold))
+                Text("Delete Account")
+                    .font(theme.fonts.headline)
             }
+            .foregroundColor(theme.colors.error)
+            .frame(maxWidth: .infinity, alignment: .leading)
             .padding(theme.spacing.lg)
             .background(
                 RoundedRectangle(cornerRadius: theme.radius.xl)
-                    .fill(theme.colors.secondaryBackground.opacity(0.7))
-                    .shadow(color: Color.black.opacity(0.03), radius: 4, y: 1)
+                    .fill(theme.colors.background)
             )
         }
         .buttonStyle(PlainButtonStyle())
-        .disabled(true)
     }
+    
+    // MARK: - App Information
+    
+    private var appInformationSection: some View {
+        VStack(alignment: .leading, spacing: theme.spacing.sm) {
+            sectionHeader(title: "App Information")
+            
+            VStack(spacing: 0) {
+                infoRow(icon: "doc.text", title: "App Version", value: viewModel.appVersion)
+                Divider().padding(.horizontal, theme.spacing.md)
+                infoRow(icon: "iphone", title: "Device", value: viewModel.deviceInfo)
+                Divider().padding(.horizontal, theme.spacing.md)
+                infoRow(icon: "app.badge", title: "App Name", value: viewModel.appName)
+            }
+            .background(
+                RoundedRectangle(cornerRadius: theme.radius.xl)
+                    .fill(theme.colors.background)
+            )
+        }
+    }
+    
+    private func infoRow(icon: String, title: String, value: String) -> some View {
+        HStack {
+            Image(systemName: icon)
+                .font(.system(size: 16))
+                .foregroundColor(theme.colors.secondaryText)
+                .frame(width: 24)
+            
+            Text(title)
+                .font(theme.fonts.subheadline)
+                .foregroundColor(theme.colors.text)
+            
+            Spacer()
+            
+            Text(value)
+                .font(theme.fonts.subheadline)
+                .foregroundColor(theme.colors.secondaryText)
+        }
+        .padding(.horizontal, theme.spacing.md)
+        .padding(.vertical, theme.spacing.sm + 4)
+    }
+    
+    // MARK: - Logout
     
     private var logoutButton: some View {
         Button(action: {
@@ -387,18 +314,6 @@ struct ProfileView: View {
                     .stroke(theme.colors.error.opacity(0.3), lineWidth: 1.5)
             )
         }
-        .padding(.top, theme.spacing.lg)
-    }
-    
-    private func formatDate(_ dateString: String) -> String {
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withFullDate, .withTime, .withDashSeparatorInDate, .withColonSeparatorInTime]
-        
-        guard let date = formatter.date(from: dateString) else { return dateString }
-        
-        let displayFormatter = DateFormatter()
-        displayFormatter.dateFormat = "MMM d, yyyy"
-        return displayFormatter.string(from: date)
     }
 }
 

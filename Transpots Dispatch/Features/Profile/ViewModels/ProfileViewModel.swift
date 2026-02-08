@@ -1,5 +1,6 @@
 import Foundation
 import Combine
+import UIKit
 
 final class ProfileViewModel: ObservableObject {
     enum ViewState: Equatable {
@@ -11,6 +12,10 @@ final class ProfileViewModel: ObservableObject {
     
     @Published var state: ViewState = .idle
     @Published var user: User?
+    @Published var showDeleteConfirmation = false
+    
+    let appearanceManager = AppearanceManager.shared
+    let languageManager = LanguageManager.shared
     
     private var currentTask: Task<Void, Never>?
     private let userService: UserServiceProtocol
@@ -52,6 +57,30 @@ final class ProfileViewModel: ObservableObject {
         tokenManager.clearTokens()
         try? storageManager.clearAll()
         NotificationCenter.default.post(name: .userDidLogout, object: nil)
+    }
+    
+    func deleteAccount() {
+        // TODO: Call API to delete account
+        logout()
+    }
+    
+    // MARK: - App Information
+    
+    var appVersion: String {
+        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "—"
+        let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "—"
+        return "\(version) (\(build))"
+    }
+    
+    var deviceInfo: String {
+        let device = UIDevice.current
+        return "\(device.model) - \(device.systemName) \(device.systemVersion)"
+    }
+    
+    var appName: String {
+        Bundle.main.infoDictionary?["CFBundleDisplayName"] as? String
+            ?? Bundle.main.infoDictionary?["CFBundleName"] as? String
+            ?? "Transpots"
     }
     
     deinit {
