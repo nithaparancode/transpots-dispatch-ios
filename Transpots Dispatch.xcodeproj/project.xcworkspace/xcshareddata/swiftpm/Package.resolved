@@ -1,5 +1,5 @@
 {
-  "originHash" : "8fa752025ed16415b149d6c4fe98caa1cac23ac8afd2aaccba0f7446a6531c6b",
+  "originHash" : "e8f130fe30ac6cdc940ef06ee1e8535e9f46ffee6aeead1722b9525562f6ce08",
   "pins" : [
     {
       "identity" : "alamofire",
@@ -8,15 +8,6 @@
       "state" : {
         "revision" : "7be73f6c2b5cd90e40798b06ebd5da8f9f79cf88",
         "version" : "5.11.0"
-      }
-    },
-    {
-      "identity" : "transpots_ui_ios",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/Transpots/transpots_ui_ios",
-      "state" : {
-        "revision" : "b6cce946f3f3d80c8e00a0aacdec340961aca5ab",
-        "version" : "1.0.0"
       }
     }
   ],

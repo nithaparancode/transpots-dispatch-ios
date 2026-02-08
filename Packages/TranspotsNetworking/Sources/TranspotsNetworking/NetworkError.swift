@@ -1,6 +1,6 @@
 import Foundation
 
-enum NetworkError: LocalizedError {
+public enum NetworkError: LocalizedError, Sendable {
     case unauthorized
     case forbidden
     case notFound
@@ -9,7 +9,7 @@ enum NetworkError: LocalizedError {
     case decodingError
     case unknown(String)
     
-    var errorDescription: String? {
+    public var errorDescription: String? {
         switch self {
         case .unauthorized:
             return "Unauthorized. Please login again."

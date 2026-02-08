@@ -1,16 +1,14 @@
 import Foundation
 import Alamofire
 
-final class NetworkManager {
-    static let shared = NetworkManager()
+public final class NetworkManager: Sendable {
     
     private let session: Session
     private let sessionWithoutInterceptor: Session
-    private let interceptor: AuthInterceptor
     
-    private init() {
-        self.interceptor = AuthInterceptor()
-        
+    /// Creates a NetworkManager with the given interceptor for authenticated requests.
+    /// - Parameter interceptor: The auth interceptor that handles token injection and refresh.
+    public init(interceptor: AuthInterceptor) {
         let configuration = URLSessionConfiguration.af.default
         configuration.timeoutIntervalForRequest = 30
         configuration.timeoutIntervalForResource = 30
@@ -24,8 +22,10 @@ final class NetworkManager {
         self.sessionWithoutInterceptor = Session(configuration: configuration)
     }
     
-    func request<T: Decodable>(
-        _ endpoint: APIEndpoint,
+    // MARK: - Request with Dictionary Parameters (Decodable response)
+    
+    public func request<T: Decodable>(
+        _ endpoint: some EndpointProviding,
         method: HTTPMethod = .get,
         parameters: Parameters? = nil,
         encoding: ParameterEncoding = JSONEncoding.default,
@@ -64,8 +64,10 @@ final class NetworkManager {
         }
     }
     
-    func request<T: Decodable, E: Encodable>(
-        _ endpoint: APIEndpoint,
+    // MARK: - Request with Encodable Parameters (Decodable response)
+    
+    public func request<T: Decodable, E: Encodable>(
+        _ endpoint: some EndpointProviding,
         method: HTTPMethod = .get,
         parameters: E? = nil,
         headers: HTTPHeaders? = nil
@@ -110,8 +112,10 @@ final class NetworkManager {
         }
     }
     
-    func request(
-        _ endpoint: APIEndpoint,
+    // MARK: - Request with no response body
+    
+    public func request(
+        _ endpoint: some EndpointProviding,
         method: HTTPMethod = .get,
         parameters: Parameters? = nil,
         encoding: ParameterEncoding = JSONEncoding.default,
@@ -136,9 +140,10 @@ final class NetworkManager {
         }
     }
     
-    // Special request method without interceptor for refresh token calls
-    func requestWithoutInterceptor<T: Decodable>(
-        _ endpoint: APIEndpoint,
+    // MARK: - Request without interceptor (for refresh token calls)
+    
+    public func requestWithoutInterceptor<T: Decodable>(
+        _ endpoint: some EndpointProviding,
         method: HTTPMethod = .get,
         parameters: Parameters? = nil,
         encoding: ParameterEncoding = JSONEncoding.default,
@@ -175,6 +180,8 @@ final class NetworkManager {
                 }
         }
     }
+    
+    // MARK: - Error Handling
     
     private func handleError(_ error: AFError, response: HTTPURLResponse?) -> NetworkError {
         if let statusCode = response?.statusCode {

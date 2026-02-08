@@ -1,5 +1,5 @@
 import Foundation
-import Alamofire
+import TranspotsNetworking
 
 protocol AuthServiceProtocol: Service {
     func login(username: String, password: String) async throws -> LoginResponse
@@ -10,13 +10,13 @@ protocol AuthServiceProtocol: Service {
 final class AuthService: AuthServiceProtocol {
     private let networkManager: NetworkManager
     
-    init(networkManager: NetworkManager = .shared) {
+    init(networkManager: NetworkManager = NetworkManagerFactory.shared) {
         self.networkManager = networkManager
     }
     
     func login(username: String, password: String) async throws -> LoginResponse {
         let request = LoginRequest(username: username, password: password)
-        return try await networkManager.request(.login, method: .post, parameters: request)
+        return try await networkManager.request(APIEndpoint.login, method: .post, parameters: request)
     }
     
     func register(firstName: String, lastName: String, email: String, password: String, address: String) async throws -> RegisterResponse {
@@ -27,10 +27,10 @@ final class AuthService: AuthServiceProtocol {
             password: password,
             address: address
         )
-        return try await networkManager.request(.register, method: .post, parameters: request)
+        return try await networkManager.request(APIEndpoint.register, method: .post, parameters: request)
     }
     
     func forgotPassword(email: String) async throws -> ForgotPasswordResponse {
-        return try await networkManager.request(.forgotPassword(email: email), method: .post)
+        return try await networkManager.request(APIEndpoint.forgotPassword(email: email), method: .post)
     }
 }

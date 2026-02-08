@@ -1,5 +1,5 @@
 import Foundation
-import Alamofire
+import TranspotsNetworking
 
 protocol TripServiceProtocol: Service {
     func fetchTrips(status: String, page: Int, size: Int) async throws -> TripResponse
@@ -11,14 +11,14 @@ protocol TripServiceProtocol: Service {
 final class TripService: TripServiceProtocol {
     private let networkManager: NetworkManager
     
-    init(networkManager: NetworkManager = .shared) {
+    init(networkManager: NetworkManager = NetworkManagerFactory.shared) {
         self.networkManager = networkManager
     }
     
     func fetchTrips(status: String, page: Int, size: Int) async throws -> TripResponse {
         print("📡 Fetching trips - Status: \(status), Page: \(page), Size: \(size)")
         let response: TripResponse = try await networkManager.request(
-            .fetchTrips(status: status, page: page, size: size, sortBy: "tripId"),
+            APIEndpoint.fetchTrips(status: status, page: page, size: size, sortBy: "tripId"),
             method: .get
         )
         print("✅ Trips fetched: \(response.trips.count) trips")
@@ -30,7 +30,7 @@ final class TripService: TripServiceProtocol {
         
         do {
             let trip: Trip = try await networkManager.request(
-                .createTrip,
+                APIEndpoint.createTrip,
                 method: .post,
                 parameters: request
             )
@@ -47,7 +47,7 @@ final class TripService: TripServiceProtocol {
         
         do {
             try await networkManager.request(
-                .endTrip(tripId: tripId),
+                APIEndpoint.endTrip(tripId: tripId),
                 method: .post
             )
             print("✅ Trip ended successfully")
@@ -62,7 +62,7 @@ final class TripService: TripServiceProtocol {
         
         do {
             try await networkManager.request(
-                .deleteTrip(tripId: tripId),
+                APIEndpoint.deleteTrip(tripId: tripId),
                 method: .delete
             )
             print("✅ Trip deleted successfully")

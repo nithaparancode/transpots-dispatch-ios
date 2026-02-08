@@ -1,5 +1,5 @@
 import Foundation
-import Alamofire
+import TranspotsNetworking
 
 protocol DashboardServiceProtocol: Service {
     func fetchDashboardSummary() async throws -> DashboardSummary
@@ -8,7 +8,7 @@ protocol DashboardServiceProtocol: Service {
 final class DashboardService: DashboardServiceProtocol {
     private let networkManager: NetworkManager
     
-    init(networkManager: NetworkManager = .shared) {
+    init(networkManager: NetworkManager = NetworkManagerFactory.shared) {
         self.networkManager = networkManager
     }
     
@@ -16,7 +16,7 @@ final class DashboardService: DashboardServiceProtocol {
         print("📡 Fetching dashboard from API: \(APIEndpoint.dashboardSummary.url)")
         
         do {
-            let summary: DashboardSummary = try await networkManager.request(.dashboardSummary, method: .get)
+            let summary: DashboardSummary = try await networkManager.request(APIEndpoint.dashboardSummary, method: .get)
             print("✅ Dashboard API success")
             return summary
         } catch {

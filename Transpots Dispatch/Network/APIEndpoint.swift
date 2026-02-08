@@ -1,6 +1,7 @@
 import Foundation
+import TranspotsNetworking
 
-enum APIEndpoint {
+enum APIEndpoint: EndpointProviding {
     case login
     case register
     case forgotPassword(email: String)

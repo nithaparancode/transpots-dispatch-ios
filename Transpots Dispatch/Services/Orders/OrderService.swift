@@ -1,5 +1,5 @@
 import Foundation
-import Alamofire
+import TranspotsNetworking
 
 protocol OrderServiceProtocol: Service {
     func fetchOrders(status: OrderStatus, page: Int, size: Int) async throws -> OrdersResponse
@@ -10,7 +10,7 @@ protocol OrderServiceProtocol: Service {
 final class OrderService: OrderServiceProtocol {
     private let networkManager: NetworkManager
     
-    init(networkManager: NetworkManager = .shared) {
+    init(networkManager: NetworkManager = NetworkManagerFactory.shared) {
         self.networkManager = networkManager
     }
     
@@ -19,7 +19,7 @@ final class OrderService: OrderServiceProtocol {
         
         do {
             let response: OrdersResponse = try await networkManager.request(
-                .fetchOrders(status: status.rawValue, page: page, size: size),
+                APIEndpoint.fetchOrders(status: status.rawValue, page: page, size: size),
                 method: .get
             )
             print("✅ Orders fetched: \(response.orders.count) orders")
@@ -35,7 +35,7 @@ final class OrderService: OrderServiceProtocol {
         
         do {
             let order: Order = try await networkManager.request(
-                .getOrderDetail(orderId: orderId),
+                APIEndpoint.getOrderDetail(orderId: orderId),
                 method: .get
             )
             print("✅ Order detail fetched: \(order.userOrderId)")
@@ -51,7 +51,7 @@ final class OrderService: OrderServiceProtocol {
         
         do {
             let updatedOrder: Order = try await networkManager.request(
-                .updateOrder(orderId: order.orderId),
+                APIEndpoint.updateOrder(orderId: order.orderId),
                 method: .put,
                 parameters: order
             )

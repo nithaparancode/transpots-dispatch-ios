@@ -1,5 +1,5 @@
 import Foundation
-import Alamofire
+import TranspotsNetworking
 
 protocol DriverServiceProtocol {
     func fetchDrivers(userId: String) async throws -> [Driver]
@@ -10,7 +10,7 @@ protocol DriverServiceProtocol {
 final class DriverService: DriverServiceProtocol {
     private let networkManager: NetworkManager
     
-    init(networkManager: NetworkManager = NetworkManager.shared) {
+    init(networkManager: NetworkManager = NetworkManagerFactory.shared) {
         self.networkManager = networkManager
     }
     

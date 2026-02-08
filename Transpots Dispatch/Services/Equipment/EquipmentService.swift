@@ -1,5 +1,5 @@
 import Foundation
-import Alamofire
+import TranspotsNetworking
 
 protocol EquipmentServiceProtocol: Service {
     func fetchEquipments() async throws -> [Equipment]
@@ -8,7 +8,7 @@ protocol EquipmentServiceProtocol: Service {
 final class EquipmentService: EquipmentServiceProtocol {
     private let networkManager: NetworkManager
     
-    init(networkManager: NetworkManager = .shared) {
+    init(networkManager: NetworkManager = NetworkManagerFactory.shared) {
         self.networkManager = networkManager
     }
     
@@ -17,7 +17,7 @@ final class EquipmentService: EquipmentServiceProtocol {
         
         do {
             let equipments: [Equipment] = try await networkManager.request(
-                .fetchEquipments,
+                APIEndpoint.fetchEquipments,
                 method: .get
             )
             print("✅ Equipments fetched: \(equipments.count) equipments")

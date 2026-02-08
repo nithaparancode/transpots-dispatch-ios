@@ -1,6 +1,7 @@
 import Foundation
+import TranspotsNetworking
 
-final class TokenManager {
+final class TokenManager: TokenProviding, @unchecked Sendable {
     static let shared = TokenManager()
     
     private let storageManager: StorageManager
