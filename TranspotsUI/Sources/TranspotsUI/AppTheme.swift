@@ -49,7 +49,7 @@ public struct ThemeColors {
     public let border: Color
     
     public static let light = ThemeColors(
-        primary: Color(hex: "007AFF"),
+        primary: Color(hex: "1077c1"),
         secondary: Color(hex: "5856D6"),
         accent: Color(hex: "FF9500"),
         background: .white,
