@@ -109,7 +109,7 @@
 			packageReferences = (
 				A06E93CF2F20900000A120F1 /* XCRemoteSwiftPackageReference "Alamofire" */,
 				A0D0619F2F38D54500F59577 /* XCLocalSwiftPackageReference "../transpots_ui_ios" */,
-				A0E072A22F39000000072B36 /* XCLocalSwiftPackageReference "Packages/TranspotsNetworking" */,
+				A0E072A22F39000000072B36 /* XCRemoteSwiftPackageReference "transpots_networking_ios" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = A06E93BE2F20877600A120F1 /* Products */;
@@ -361,10 +361,6 @@
 			isa = XCLocalSwiftPackageReference;
 			relativePath = ../transpots_ui_ios;
 		};
-		A0E072A22F39000000072B36 /* XCLocalSwiftPackageReference "Packages/TranspotsNetworking" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = Packages/TranspotsNetworking;
-		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCRemoteSwiftPackageReference section */
@@ -374,6 +370,14 @@
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 5.9.1;
+			};
+		};
+		A0E072A22F39000000072B36 /* XCRemoteSwiftPackageReference "transpots_networking_ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Transpots/transpots_networking_ios.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.0;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
@@ -390,6 +394,7 @@
 		};
 		A0E072A12F39000000072B36 /* TranspotsNetworking */ = {
 			isa = XCSwiftPackageProductDependency;
+			package = A0E072A22F39000000072B36 /* XCRemoteSwiftPackageReference "transpots_networking_ios" */;
 			productName = TranspotsNetworking;
 		};
 /* End XCSwiftPackageProductDependency section */
