@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		A070AC902F208A9800072B36 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = A06E93D02F20900000A120F1 /* Alamofire */; };
 		A0D061A12F38D54500F59577 /* TranspotsUI in Frameworks */ = {isa = PBXBuildFile; productRef = A0D061A02F38D54500F59577 /* TranspotsUI */; };
+		A0D062E42F38DD5700F59577 /* TranspotsUI in Frameworks */ = {isa = PBXBuildFile; productRef = A0D062E32F38DD5700F59577 /* TranspotsUI */; };
 		A0E072A02F39000000072B36 /* TranspotsNetworking in Frameworks */ = {isa = PBXBuildFile; productRef = A0E072A12F39000000072B36 /* TranspotsNetworking */; };
 /* End PBXBuildFile section */
 
@@ -32,6 +33,7 @@
 				A070AC902F208A9800072B36 /* Alamofire in Frameworks */,
 				A0D061A12F38D54500F59577 /* TranspotsUI in Frameworks */,
 				A0E072A02F39000000072B36 /* TranspotsNetworking in Frameworks */,
+				A0D062E42F38DD5700F59577 /* TranspotsUI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -77,6 +79,7 @@
 				A06E93D02F20900000A120F1 /* Alamofire */,
 				A0D061A02F38D54500F59577 /* TranspotsUI */,
 				A0E072A12F39000000072B36 /* TranspotsNetworking */,
+				A0D062E32F38DD5700F59577 /* TranspotsUI */,
 			);
 			productName = "Transpots Dispatch";
 			productReference = A06E93BD2F20877600A120F1 /* Transpots Dispatch.app */;
@@ -108,8 +111,8 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				A06E93CF2F20900000A120F1 /* XCRemoteSwiftPackageReference "Alamofire" */,
-				A0D0619F2F38D54500F59577 /* XCLocalSwiftPackageReference "../transpots_ui_ios" */,
 				A0E072A22F39000000072B36 /* XCRemoteSwiftPackageReference "transpots_networking_ios" */,
+				A0D062E22F38DD5700F59577 /* XCRemoteSwiftPackageReference "transpots_ui_ios" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = A06E93BE2F20877600A120F1 /* Products */;
@@ -356,13 +359,6 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin XCLocalSwiftPackageReference section */
-		A0D0619F2F38D54500F59577 /* XCLocalSwiftPackageReference "../transpots_ui_ios" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = ../transpots_ui_ios;
-		};
-/* End XCLocalSwiftPackageReference section */
-
 /* Begin XCRemoteSwiftPackageReference section */
 		A06E93CF2F20900000A120F1 /* XCRemoteSwiftPackageReference "Alamofire" */ = {
 			isa = XCRemoteSwiftPackageReference;
@@ -370,6 +366,14 @@
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 5.9.1;
+			};
+		};
+		A0D062E22F38DD5700F59577 /* XCRemoteSwiftPackageReference "transpots_ui_ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Transpots/transpots_ui_ios";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.0;
 			};
 		};
 		A0E072A22F39000000072B36 /* XCRemoteSwiftPackageReference "transpots_networking_ios" */ = {
@@ -390,6 +394,11 @@
 		};
 		A0D061A02F38D54500F59577 /* TranspotsUI */ = {
 			isa = XCSwiftPackageProductDependency;
+			productName = TranspotsUI;
+		};
+		A0D062E32F38DD5700F59577 /* TranspotsUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A0D062E22F38DD5700F59577 /* XCRemoteSwiftPackageReference "transpots_ui_ios" */;
 			productName = TranspotsUI;
 		};
 		A0E072A12F39000000072B36 /* TranspotsNetworking */ = {
